@@ -39,7 +39,6 @@ public class NlpCrawler {
 	public void setCorpus(String name) throws ResourceInstantiationException, MalformedURLException {
 		Corpus corpus = Factory.newCorpus(name);
 		//FeatureMap params = Factory.newFeatureMap();
-
 		//params.put("sourceUrl", new URL(crawler.getRoot()));
 		//params.put("preserveOriginalContent", new Boolean(true));
 		//params.put("collectRepositioningInfo", new Boolean(true));
