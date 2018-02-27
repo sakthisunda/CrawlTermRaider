@@ -25,7 +25,6 @@ import org.springframework.web.context.request.async.WebAsyncTask;
 import com.cisco.lms.nlp.helper.NlpCrawler;
 
 import gate.Corpus;
-import gate.Factory;
 import gate.termraider.bank.AbstractTermbank;
 import gate.termraider.output.CsvGenerator;
 import gate.util.LanguageAnalyserDocumentProcessor;
@@ -82,26 +81,20 @@ public class DataExtractionController {
 			@Override
 			public ResponseEntity<Map<String, Object>> call() throws Exception {
 				
-							
-				
 				String outputDir = env.getProperty("raider.output.dir");
 				String url = (String) bodyContent.get("rootUrl");
 				nlpCrawler.setRootUrl(url);
 				nlpCrawler.setCorpus("saksunda");
 				nlpCrawler.execute();
 
-				Corpus corpus = nlpCrawler.getOutputCorpus();
-				
+				Corpus corpus = nlpCrawler.getOutputCorpus();				
 				controller.init();
 				controller.setCorpus(corpus);
 				controller.execute();
 				
 				Corpus outCorpus = controller.getCorpus();
 				System.out.println(outCorpus.getFeatures());
-				//outCorpus.forEach(s -> System.out.println(s.getName()));
 				
-				
-
 				AbstractTermbank termbank = (AbstractTermbank) outCorpus.getFeatures().get("tfidfTermbank");
 				AbstractTermbank hyponymytermbank = (AbstractTermbank) outCorpus.getFeatures().get("hyponymyTermbank");
 				AbstractTermbank annotationtermbank = (AbstractTermbank) outCorpus.getFeatures().get("annotationTermbank");
@@ -123,16 +116,12 @@ public class DataExtractionController {
 					Files.createFile(aPath.toPath());
 				
 				CsvGenerator generator = new CsvGenerator();
-
 				generator.generateAndSaveCsv(termbank, 0, fPath);
 				generator.generateAndSaveCsv(hyponymytermbank, 0, gPath);
 				generator.generateAndSaveCsv(annotationtermbank, 0, aPath);
 
-				// String res = String.format("url:%s;name:%s;depth:%d", url,
-				// nlpCrawler.getOutputCorpus().size(),
-				// nlpCrawler.getDepth());*/
+			
 				Map<String, Object> retJson = new HashMap<>();
-				// retJson.put("success", outCorpus.getName());
 				retJson.put("success", corpus.getDocumentNames());
 
 				return new ResponseEntity<>(retJson, HttpStatus.ACCEPTED);

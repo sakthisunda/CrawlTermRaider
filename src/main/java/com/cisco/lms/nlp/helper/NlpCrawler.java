@@ -1,15 +1,12 @@
 package com.cisco.lms.nlp.helper;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.springframework.stereotype.Component;
 
 import crawl.CrawlPR;
 import gate.Corpus;
-import gate.Document;
 import gate.Factory;
-import gate.FeatureMap;
 import gate.creole.ExecutionException;
 import gate.creole.ResourceInstantiationException;
 
