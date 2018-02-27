@@ -115,10 +115,10 @@ public class DataExtractionController {
 				if (!aPath.exists())
 					Files.createFile(aPath.toPath());
 				
-				CsvGenerator generator = new CsvGenerator();
-				generator.generateAndSaveCsv(termbank, 0, fPath);
-				generator.generateAndSaveCsv(hyponymytermbank, 0, gPath);
-				generator.generateAndSaveCsv(annotationtermbank, 0, aPath);
+				
+				CsvGenerator.generateAndSaveCsv(termbank, 0, fPath);
+				CsvGenerator.generateAndSaveCsv(hyponymytermbank, 0, gPath);
+				CsvGenerator.generateAndSaveCsv(annotationtermbank, 0, aPath);
 
 			
 				Map<String, Object> retJson = new HashMap<>();
