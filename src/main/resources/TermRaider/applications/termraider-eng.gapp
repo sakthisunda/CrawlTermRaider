@@ -69,6 +69,8 @@ eachDocument {
     kyotoCopier(termbank:termbank2);
     termCandidateThreshold();
 }
+// These three lines are mandatory to convert the termraider corpus to CSV files
+// of term frequency, hyponym generic terms, annotation csv
 corpus.features.tfidfTermbank = termbank0
 corpus.features.annotationTermbank = termbank1
 corpus.features.hyponymyTermbank = termbank2
