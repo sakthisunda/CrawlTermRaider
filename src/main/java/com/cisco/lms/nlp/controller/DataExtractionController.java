@@ -3,17 +3,25 @@ package com.cisco.lms.nlp.controller;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.concurrent.Callable;
 
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.Resource;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.async.WebAsyncTask;
 
+import com.cisco.lms.nlp.helper.CsvToTurtleGenerator;
 import com.cisco.lms.nlp.helper.NlpCrawler;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -58,7 +67,15 @@ public class DataExtractionController {
 	AsyncTaskExecutor threadPoolExecutor;
 
 	@Autowired
+	CsvToTurtleGenerator csvToTurtleGenerator;
+
+	@Autowired
 	Environment env;
+
+	@Value(value = "classpath:termraider.vm")
+	private Resource raiderTripleFile;
+
+	private MessageFormat frequencyTermTriple;
 
 	@RequestMapping(method = RequestMethod.GET, value = "/crawl", produces = { MediaType.APPLICATION_JSON_VALUE })
 	public WebAsyncTask<ResponseEntity<Map<String, String>>> crawl() {
@@ -122,22 +139,9 @@ public class DataExtractionController {
 				CsvGenerator.generateAndSaveCsv(hyponymytermbank, 0, gPath);
 				CsvGenerator.generateAndSaveCsv(annotationtermbank, 0, aPath);
 
-				CSVReader reader = new CSVReader(new FileReader(outputDir + "\\frequency.csv"), ',', '"', 1);
-				String[] nextLine;
-
-				try (FileWriter fw = new FileWriter(outputDir + "\\frequency.ttl")) {
-
-					while ((nextLine = reader.readNext()) != null) {
-
-						if ("multiword".equalsIgnoreCase(nextLine[2])) {
-							if (nextLine[0].split(" ").length == 2) {
-								fw.write(String.format("%s %d\n", nextLine[0], Integer.parseInt(nextLine[5])));
-								fw.flush();
-							}
-						}
-
-					}
-				}
+				csvToTurtleGenerator.setCsvAbsoluteFileName(outputDir + "\\frequency.csv");
+				csvToTurtleGenerator.setTurtleAbsoluteFileName(outputDir + "\\frequency.ttl");
+				csvToTurtleGenerator.saveTurtleFile();
 
 				Map<String, Object> retJson = new HashMap<>();
 				retJson.put("success", corpus.getDocumentNames());

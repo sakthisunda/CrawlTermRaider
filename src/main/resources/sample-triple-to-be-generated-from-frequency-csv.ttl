@@ -1,4 +1,0 @@
-<tag:stardog:api:a02051456d449c739f1b837c1227ca9d> rdf:type owl:NamedIndividual ,
-                                                            <http://clks.cisco.com/km/TermRaider> ;
-                                                   <http://clks.cisco.com/km/weight> 1 ;
-                                                   rdfs:label "vr experience" .
