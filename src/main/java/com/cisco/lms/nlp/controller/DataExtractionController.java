@@ -1,6 +1,8 @@
 package com.cisco.lms.nlp.controller;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +26,7 @@ import org.springframework.web.context.request.async.WebAsyncTask;
 
 import com.cisco.lms.nlp.helper.NlpCrawler;
 
+import au.com.bytecode.opencsv.CSVReader;
 import gate.Corpus;
 import gate.termraider.bank.AbstractTermbank;
 import gate.termraider.output.CsvGenerator;
@@ -80,25 +83,25 @@ public class DataExtractionController {
 		Callable<ResponseEntity<Map<String, Object>>> callableResponseEntity = new Callable<ResponseEntity<Map<String, Object>>>() {
 			@Override
 			public ResponseEntity<Map<String, Object>> call() throws Exception {
-				
+
 				String outputDir = env.getProperty("raider.output.dir");
 				String url = (String) bodyContent.get("rootUrl");
 				nlpCrawler.setRootUrl(url);
 				nlpCrawler.setCorpus("saksunda");
 				nlpCrawler.execute();
 
-				Corpus corpus = nlpCrawler.getOutputCorpus();				
+				Corpus corpus = nlpCrawler.getOutputCorpus();
 				controller.init();
 				controller.setCorpus(corpus);
 				controller.execute();
-				
+
 				Corpus outCorpus = controller.getCorpus();
 				System.out.println(outCorpus.getFeatures());
-				
+
 				AbstractTermbank termbank = (AbstractTermbank) outCorpus.getFeatures().get("tfidfTermbank");
 				AbstractTermbank hyponymytermbank = (AbstractTermbank) outCorpus.getFeatures().get("hyponymyTermbank");
 				AbstractTermbank annotationtermbank = (AbstractTermbank) outCorpus.getFeatures().get("annotationTermbank");
-				
+
 				System.out.println("frquencyTermBank:" + termbank);
 				System.out.println("hyponymyTermbank:" + hyponymytermbank);
 				System.out.println("annotationTermbank:" + annotationtermbank);
@@ -114,13 +117,28 @@ public class DataExtractionController {
 				File aPath = new File(outputDir + "\\annotation.csv");
 				if (!aPath.exists())
 					Files.createFile(aPath.toPath());
-				
-				
+
 				CsvGenerator.generateAndSaveCsv(termbank, 0, fPath);
 				CsvGenerator.generateAndSaveCsv(hyponymytermbank, 0, gPath);
 				CsvGenerator.generateAndSaveCsv(annotationtermbank, 0, aPath);
 
-			
+				CSVReader reader = new CSVReader(new FileReader(outputDir + "\\frequency.csv"), ',', '"', 1);
+				String[] nextLine;
+
+				try (FileWriter fw = new FileWriter(outputDir + "\\frequency.ttl")) {
+
+					while ((nextLine = reader.readNext()) != null) {
+
+						if ("multiword".equalsIgnoreCase(nextLine[2])) {
+							if (nextLine[0].split(" ").length == 2) {
+								fw.write(String.format("%s %d\n", nextLine[0], Integer.parseInt(nextLine[5])));
+								fw.flush();
+							}
+						}
+
+					}
+				}
+
 				Map<String, Object> retJson = new HashMap<>();
 				retJson.put("success", corpus.getDocumentNames());
 
