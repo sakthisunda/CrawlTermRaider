@@ -69,15 +69,12 @@ public class CsvToTurtleGenerator {
 			String[] nextLine;
 			while ((nextLine = reader.readNext()) != null) {
 
-				if ("multiword".equalsIgnoreCase(nextLine[2])) {
+				if ("multiword".equalsIgnoreCase(nextLine[2]) && nextLine[0].split(" ").length == 2) {
 
-					if (nextLine[0].split(" ").length == 2) {
+					Object[] testArgs = { DigestUtils.md5Hex(nextLine[0]), new Integer(nextLine[5]), nextLine[0] };
+					fw.write(String.format("%s%n", frequencyTermTriple.format(testArgs)));
+					fw.flush();
 
-						Object[] testArgs = { DigestUtils.md5Hex(nextLine[0]), new Integer(nextLine[5]), nextLine[0] };
-						fw.write(String.format("%s\n", frequencyTermTriple.format(testArgs)));
-						fw.flush();
-
-					}
 				}
 			}
 		}

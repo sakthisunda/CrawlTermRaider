@@ -31,12 +31,14 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 @ComponentScan(basePackages = { "com.cisco.lms.nlp.controller", "com.cisco.lms.nlp.helper"})
 @ImportResource({ "classpath:/spring-gate.xml" })
 @PropertySource("classpath:kvm.properties")
+@EnableAsync(proxyTargetClass = true)
 public class ServicesConfiguration implements AsyncConfigurer {
 	
 	@Autowired

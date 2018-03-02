@@ -44,7 +44,6 @@ public class WebConfiguration extends WebMvcConfigurerAdapter  {
 	@Bean
 	public String raiderOutputDir() {
 		System.out.printf(" Raider output dir---->%s\n" , env.getProperty("raider.output.dir"));
-		
 		return env.getProperty("raider.output.dir");
 	}
 

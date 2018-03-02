@@ -1,3 +1,4 @@
 <tag:stardog:api:{0}> rdf:type owl:NamedIndividual ,<http://clks.cisco.com/km/TermRaider> ;
    <http://clks.cisco.com/km/weight> {1} ;
    rdfs:label "{2}" .
+   

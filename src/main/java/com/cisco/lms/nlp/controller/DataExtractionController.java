@@ -1,20 +1,9 @@
 package com.cisco.lms.nlp.controller;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.security.MessageDigest;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.concurrent.Callable;
 
-import javax.annotation.PostConstruct;
-
-import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,28 +23,14 @@ import org.springframework.web.context.request.async.WebAsyncTask;
 
 import com.cisco.lms.nlp.helper.CsvToTurtleGenerator;
 import com.cisco.lms.nlp.helper.NlpCrawler;
-
-import au.com.bytecode.opencsv.CSVReader;
-import gate.Corpus;
-import gate.termraider.bank.AbstractTermbank;
-import gate.termraider.output.CsvGenerator;
-import gate.util.LanguageAnalyserDocumentProcessor;
+import com.cisco.lms.nlp.helper.TermRaiderHelper;
 
 @Controller
 @RequestMapping("/")
 public class DataExtractionController {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DataExtractionController.class);
-
-	@Value("${gate.file.folder}")
-	private String gateFileFolder;
-
-	@Value("${raider.output.dir}")
-	private String raiderOutputDir;
-
-	@Autowired
-	LanguageAnalyserDocumentProcessor processor;
-
+	
 	@Autowired
 	@Qualifier("theApp")
 	gate.CorpusController controller;
@@ -75,7 +50,8 @@ public class DataExtractionController {
 	@Value(value = "classpath:termraider.vm")
 	private Resource raiderTripleFile;
 
-	private MessageFormat frequencyTermTriple;
+	@Autowired
+	TermRaiderHelper termRaiderHelper;
 
 	@RequestMapping(method = RequestMethod.GET, value = "/crawl", produces = { MediaType.APPLICATION_JSON_VALUE })
 	public WebAsyncTask<ResponseEntity<Map<String, String>>> crawl() {
@@ -101,51 +77,10 @@ public class DataExtractionController {
 			@Override
 			public ResponseEntity<Map<String, Object>> call() throws Exception {
 
-				String outputDir = env.getProperty("raider.output.dir");
 				String url = (String) bodyContent.get("rootUrl");
-				nlpCrawler.setRootUrl(url);
-				nlpCrawler.setCorpus("saksunda");
-				nlpCrawler.execute();
-
-				Corpus corpus = nlpCrawler.getOutputCorpus();
-				controller.init();
-				controller.setCorpus(corpus);
-				controller.execute();
-
-				Corpus outCorpus = controller.getCorpus();
-				System.out.println(outCorpus.getFeatures());
-
-				AbstractTermbank termbank = (AbstractTermbank) outCorpus.getFeatures().get("tfidfTermbank");
-				AbstractTermbank hyponymytermbank = (AbstractTermbank) outCorpus.getFeatures().get("hyponymyTermbank");
-				AbstractTermbank annotationtermbank = (AbstractTermbank) outCorpus.getFeatures().get("annotationTermbank");
-
-				System.out.println("frquencyTermBank:" + termbank);
-				System.out.println("hyponymyTermbank:" + hyponymytermbank);
-				System.out.println("annotationTermbank:" + annotationtermbank);
-
-				File fPath = new File(outputDir + "\\frequency.csv");
-				if (!fPath.exists())
-					Files.createFile(fPath.toPath());
-
-				File gPath = new File(outputDir + "\\generic.csv");
-				if (!gPath.exists())
-					Files.createFile(gPath.toPath());
-
-				File aPath = new File(outputDir + "\\annotation.csv");
-				if (!aPath.exists())
-					Files.createFile(aPath.toPath());
-
-				CsvGenerator.generateAndSaveCsv(termbank, 0, fPath);
-				CsvGenerator.generateAndSaveCsv(hyponymytermbank, 0, gPath);
-				CsvGenerator.generateAndSaveCsv(annotationtermbank, 0, aPath);
-
-				csvToTurtleGenerator.setCsvAbsoluteFileName(outputDir + "\\frequency.csv");
-				csvToTurtleGenerator.setTurtleAbsoluteFileName(outputDir + "\\frequency.ttl");
-				csvToTurtleGenerator.saveTurtleFile();
-
+				termRaiderHelper.createTermBank(url);
 				Map<String, Object> retJson = new HashMap<>();
-				retJson.put("success", corpus.getDocumentNames());
-
+				retJson.put("success", "Request accepted");
 				return new ResponseEntity<>(retJson, HttpStatus.ACCEPTED);
 			}
 
