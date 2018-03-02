@@ -2,7 +2,11 @@ package com.cisco.lms.nlp.helper;
 
 import java.net.MalformedURLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import com.cisco.lms.nlp.controller.DataExtractionController;
 
 import crawl.CrawlPR;
 import gate.Corpus;
@@ -12,6 +16,8 @@ import gate.creole.ResourceInstantiationException;
 
 @Component
 public class NlpCrawler {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(NlpCrawler.class);
 
 	private CrawlPR crawler;
 

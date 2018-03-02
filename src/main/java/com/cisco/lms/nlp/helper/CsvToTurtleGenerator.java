@@ -8,6 +8,8 @@ import java.text.MessageFormat;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,8 @@ import au.com.bytecode.opencsv.CSVReader;
 
 @Component
 public class CsvToTurtleGenerator {
+
+	private static final Logger LOG = LoggerFactory.getLogger(CsvToTurtleGenerator.class);
 
 	@Value(value = "classpath:termraider.vm")
 	private Resource raiderTripleFile;
@@ -69,7 +73,7 @@ public class CsvToTurtleGenerator {
 			String[] nextLine;
 			while ((nextLine = reader.readNext()) != null) {
 
-				if ("multiword".equalsIgnoreCase(nextLine[2]) && nextLine[0].split(" ").length == 2) {
+				if (DefaultConstants.MULTI_WORD.equalsIgnoreCase(nextLine[2]) && nextLine[0].split(" ").length == 2) {
 
 					Object[] testArgs = { DigestUtils.md5Hex(nextLine[0]), new Integer(nextLine[5]), nextLine[0] };
 					fw.write(String.format("%s%n", frequencyTermTriple.format(testArgs)));
