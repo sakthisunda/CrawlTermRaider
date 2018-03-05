@@ -35,12 +35,12 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
-@ComponentScan(basePackages = { "com.cisco.lms.nlp.controller", "com.cisco.lms.nlp.helper"})
+@ComponentScan(basePackages = { "com.cisco.lms.nlp.helper" })
 @ImportResource({ "classpath:/spring-gate.xml" })
 @PropertySource("classpath:kvm.properties")
 @EnableAsync(proxyTargetClass = true)
 public class ServicesConfiguration implements AsyncConfigurer {
-	
+
 	@Autowired
 	Environment env;
 
@@ -48,7 +48,7 @@ public class ServicesConfiguration implements AsyncConfigurer {
 	public static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
 		return new PropertySourcesPlaceholderConfigurer();
 	}
-	
+
 	@Override
 	@Bean
 	public AsyncTaskExecutor getAsyncExecutor() {
@@ -68,10 +68,10 @@ public class ServicesConfiguration implements AsyncConfigurer {
 		}
 		return executor;
 	}
-	
-    @Override
-    public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-        return new SimpleAsyncUncaughtExceptionHandler();
-    }
+
+	@Override
+	public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+		return new SimpleAsyncUncaughtExceptionHandler();
+	}
 
 }

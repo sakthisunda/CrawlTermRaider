@@ -27,7 +27,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 
 @Configuration
-@ComponentScan(basePackages = { "com.cisco.lms.nlp.controller", "com.cisco.lms.nlp.helper" })
+@ComponentScan(basePackages = { "com.cisco.lms.nlp.controller"})
 @EnableWebMvc
 @PropertySource("classpath:kvm.properties")
 public class WebConfiguration extends WebMvcConfigurerAdapter  {
