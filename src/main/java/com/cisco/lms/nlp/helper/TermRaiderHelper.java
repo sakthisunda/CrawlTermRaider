@@ -45,6 +45,7 @@ public class TermRaiderHelper {
 
 	public void createTermBank(String rootUrl) throws GateException, IOException {
 
+		String basePath = rootUrl.replaceAll("[^\\p{L}\\p{Nd}]+", "_");
 		nlpCrawler.setRootUrl(rootUrl);
 		nlpCrawler.setCorpus("termBank");
 		nlpCrawler.execute();
@@ -72,17 +73,17 @@ public class TermRaiderHelper {
 		String annotateFileName = new SimpleDateFormat("'annotate'yyyy-MM-dd-HH-mm'.csv'").format(new Date());
 
 		// Create csv files
-		createFile(frequencyFileName);
-		createFile(hyponymFileName);
-		createFile(annotateFileName);
+		createFile(frequencyFileName, basePath);
+		createFile(hyponymFileName, basePath);
+		createFile(annotateFileName, basePath);
 
 		// save term banks in created csv files
-		saveTermBank(frequencyTermbank, frequencyFileName);
-		saveTermBank(hyponymytermbank, hyponymFileName);
-		saveTermBank(annotationtermbank, annotateFileName);
+		saveTermBank(frequencyTermbank, basePath, frequencyFileName);
+		saveTermBank(hyponymytermbank, basePath, hyponymFileName);
+		saveTermBank(annotationtermbank, basePath, annotateFileName);
 
 		// Turtle conversion
-		csvToTurtle(frequencyFileName);
+		csvToTurtle(frequencyFileName, basePath);
 
 	}
 
@@ -90,20 +91,20 @@ public class TermRaiderHelper {
 		return (AbstractTermbank) corpus.getFeatures().get(bankType);
 	}
 
-	private void saveTermBank(AbstractTermbank termBank, String outputFileName) throws GateException, IOException {
-		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY);
+	private void saveTermBank(AbstractTermbank termBank, String basePath, String outputFileName) throws GateException, IOException {
+		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
 		Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
 		CsvGenerator.generateAndSaveCsv(termBank, 0, Paths.get(outputDirPath + File.separator + outputFileName).toFile());
 	}
 
-	private boolean createFile(String fileName) throws IOException {
-		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY);
+	private boolean createFile(String fileName, String basePath) throws IOException {
+		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
 		Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
 		return Paths.get(outputDirPath + File.separator + fileName).toFile().createNewFile();
 	}
 
-	private void csvToTurtle(String fileName) throws IOException {
-		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY);
+	private void csvToTurtle(String fileName, String basePath) throws IOException {
+		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
 		Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
 		csvToTurtleGenerator.setCsvAbsoluteFileName(outputDirPath + File.separator + fileName);
 		int extensionPos = fileName.lastIndexOf('.');
