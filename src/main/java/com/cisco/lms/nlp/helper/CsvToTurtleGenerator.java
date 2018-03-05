@@ -38,7 +38,6 @@ public class CsvToTurtleGenerator {
 	@PostConstruct
 	public void init() throws IOException {
 
-		System.out.println("************************************* INIT ");
 		byte[] b = new byte[1024];
 		int byteSize = raiderTripleFile.getInputStream().read(b);
 		frequencyTermTriple = new MessageFormat(new String(b, 0, byteSize));
