@@ -45,10 +45,14 @@ public class TermRaiderHelper {
 
 	public void createTermBank(String rootUrl) throws GateException, IOException {
 
+		// Remove all non-word characters
 		String basePath = rootUrl.replaceAll("[^\\p{L}\\p{Nd}]+", "_");
+		
+		//crawl thru the url
 		nlpCrawler.setRootUrl(rootUrl);
 		nlpCrawler.setCorpus("termBank");
 		nlpCrawler.execute();
+		nlpCrawler.setDepth(env.getProperty("crawler.depth") != null ? Integer.parseInt(env.getProperty("crawler.depth")) : 1);
 
 		Corpus corpus = nlpCrawler.getOutputCorpus();
 		controller.init();
