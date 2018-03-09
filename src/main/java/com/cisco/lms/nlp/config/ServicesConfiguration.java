@@ -37,7 +37,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @Configuration
 @ComponentScan(basePackages = { "com.cisco.lms.nlp.helper" })
 @ImportResource({ "classpath:/spring-gate.xml" })
-@PropertySource("classpath:kvm.properties")
+@PropertySource("classpath:term-raider.properties")
 @EnableAsync(proxyTargetClass = true)
 public class ServicesConfiguration implements AsyncConfigurer {
 

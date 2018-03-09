@@ -6,8 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.cisco.lms.nlp.controller.DataExtractionController;
-
 import crawl.CrawlPR;
 import gate.Corpus;
 import gate.Factory;
@@ -27,7 +25,6 @@ public class NlpCrawler {
 		crawler.setKeywordsCaseSensitive(true);
 		crawler.setConvertXmlTypes(true);
 		crawler.setDomain(crawl.DomainMode.WEB);
-		crawler.setDepth(1);
 		crawler.setDfs(false);
 		crawler.setMaxPageSize(100);
 		crawler.setStopAfter(5);
@@ -40,6 +37,7 @@ public class NlpCrawler {
 	}
 
 	public void setCorpus(String name) throws ResourceInstantiationException, MalformedURLException {
+		System.out.printf("Depth=%d\n", this.getDepth());
 		Corpus corpus = Factory.newCorpus(name);
 		crawler.setOutputCorpus(corpus);
 	}

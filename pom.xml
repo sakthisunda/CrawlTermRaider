@@ -42,7 +42,11 @@
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
-
+		<dependency>
+			<groupId>edu.uci.ics</groupId>
+			<artifactId>crawler4j</artifactId>
+			<version>4.3</version>
+		</dependency>
 		<dependency>
 			<groupId>gate</groupId>
 			<artifactId>gate-termraider</artifactId>

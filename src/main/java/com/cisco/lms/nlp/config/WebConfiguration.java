@@ -29,7 +29,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 @ComponentScan(basePackages = { "com.cisco.lms.nlp.controller"})
 @EnableWebMvc
-@PropertySource("classpath:kvm.properties")
+@PropertySource("classpath:term-raider.properties")
 public class WebConfiguration extends WebMvcConfigurerAdapter  {
 
 	@Autowired
