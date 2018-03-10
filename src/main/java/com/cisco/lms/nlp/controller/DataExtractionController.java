@@ -8,9 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.Resource;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,7 +23,6 @@ import com.cisco.lms.nlp.helper.CrawlerConfiguation;
 import com.cisco.lms.nlp.helper.CrawlerController;
 import com.cisco.lms.nlp.helper.CsvToTurtleGenerator;
 import com.cisco.lms.nlp.helper.NlpCrawler;
-import com.cisco.lms.nlp.helper.TermRaiderCrawlerFactory;
 import com.cisco.lms.nlp.helper.TermRaiderHelper;
 
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
@@ -35,7 +32,7 @@ import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 public class DataExtractionController {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DataExtractionController.class);
-	
+
 	@Autowired
 	@Qualifier("theApp")
 	gate.CorpusController controller;
@@ -51,16 +48,15 @@ public class DataExtractionController {
 
 	@Autowired
 	Environment env;
-	
+
 	@Autowired
 	CrawlerConfiguation configuration;
-	
+
 	@Autowired
 	CrawlerController crawlerController;
-	
+
 	@Autowired
 	TermRaiderHelper termRaiderHelper;
-
 
 	@RequestMapping(method = RequestMethod.GET, value = "/crawl", produces = { MediaType.APPLICATION_JSON_VALUE })
 	public WebAsyncTask<ResponseEntity<Map<String, String>>> crawl() {
@@ -87,12 +83,13 @@ public class DataExtractionController {
 			public ResponseEntity<Map<String, Object>> call() throws Exception {
 
 				String url = (String) bodyContent.get("rootUrl");
-				//termRaiderHelper.createTermBank(url);
-								
-				CrawlConfig config = CrawlerConfiguation.build();
+				// termRaiderHelper.createTermBank(url);
+
+				CrawlConfig config = configuration.build();
 				crawlerController.setConfiguration(config);
 				crawlerController.crawl(url);
-				
+				termRaiderHelper.createTermBank(url);
+
 				Map<String, Object> retJson = new HashMap<>();
 				retJson.put("success", "Request accepted");
 				return new ResponseEntity<>(retJson, HttpStatus.ACCEPTED);

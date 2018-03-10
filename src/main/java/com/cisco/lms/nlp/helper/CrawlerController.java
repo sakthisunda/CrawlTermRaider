@@ -1,6 +1,8 @@
 package com.cisco.lms.nlp.helper;
 
+import java.io.File;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -11,6 +13,8 @@ import edu.uci.ics.crawler4j.crawler.CrawlController;
 import edu.uci.ics.crawler4j.fetcher.PageFetcher;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
+import gate.Corpus;
+import gate.Factory;
 
 @Component
 public class CrawlerController {
@@ -25,7 +29,9 @@ public class CrawlerController {
 	private CrawlConfig config;
 
 	public void setConfiguration(CrawlConfig configuration) {
+		
 		this.config = configuration;
+		
 	}
 
 	public void crawl(String rootUrl) throws Exception {
@@ -38,5 +44,6 @@ public class CrawlerController {
 		controller.start(factory, numberOfCrawlers);
 
 	}
+	
 
 }

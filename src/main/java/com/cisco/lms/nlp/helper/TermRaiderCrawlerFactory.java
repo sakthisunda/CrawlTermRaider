@@ -1,5 +1,7 @@
 package com.cisco.lms.nlp.helper;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -14,7 +16,7 @@ public class TermRaiderCrawlerFactory implements CrawlController.WebCrawlerFacto
 	Environment env;
 	
 	@Override
-    public NewCrawler newInstance() throws Exception {
+    public NewCrawler newInstance() throws IOException {
         return new NewCrawler(env);
     }
 } 
