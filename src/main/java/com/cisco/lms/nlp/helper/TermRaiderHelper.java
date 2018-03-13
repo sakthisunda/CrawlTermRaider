@@ -44,7 +44,7 @@ public class TermRaiderHelper {
 
 	@Autowired
 	Environment env;
-	
+
 	@Autowired
 	TermRaiderUtils utils;
 
@@ -54,9 +54,10 @@ public class TermRaiderHelper {
 		String basePath = utils.urlToFolderName(rootUrl);
 		utils.setOutputFolder(rootUrl);
 
-		// Initialize term raider and execute after adding the copus of documents
+		// Initialize term raider and execute after adding the copus of
+		// documents
 		controller.init();
-		controller.setCorpus(getOuputCorpus(basePath));
+		controller.setCorpus(getOuputCorpus());
 		controller.execute();
 
 		Corpus outCorpus = controller.getCorpus();
@@ -77,17 +78,17 @@ public class TermRaiderHelper {
 		String annotateFileName = new SimpleDateFormat("'annotate'yyyy-MM-dd-HH-mm'.csv'").format(new Date());
 
 		// Create csv files
-		createFile(frequencyFileName, basePath);
-		createFile(hyponymFileName, basePath);
-		createFile(annotateFileName, basePath);
+		createFile(frequencyFileName);
+		createFile(hyponymFileName);
+		createFile(annotateFileName);
 
 		// save term banks in created csv files
-		saveTermBank(frequencyTermbank, basePath, frequencyFileName);
-		saveTermBank(hyponymytermbank, basePath, hyponymFileName);
-		saveTermBank(annotationtermbank, basePath, annotateFileName);
+		saveTermBank(frequencyTermbank, frequencyFileName);
+		saveTermBank(hyponymytermbank, hyponymFileName);
+		saveTermBank(annotationtermbank, annotateFileName);
 
 		// Turtle conversion
-		csvToTurtle(frequencyFileName, basePath);
+		csvToTurtle(frequencyFileName);
 
 	}
 
@@ -95,40 +96,33 @@ public class TermRaiderHelper {
 		return (AbstractTermbank) corpus.getFeatures().get(bankType);
 	}
 
-	private void saveTermBank(AbstractTermbank termBank, String basePath, String outputFileName) throws GateException, IOException {
-		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
-		Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
-		CsvGenerator.generateAndSaveCsv(termBank, 0, Paths.get(outputDirPath + File.separator + outputFileName).toFile());
+	private void saveTermBank(AbstractTermbank termBank, String outputFileName) throws GateException, IOException {
+		Files.createDirectories(utils.getOutputFolder());
+		CsvGenerator.generateAndSaveCsv(termBank, 0, Paths.get(utils.getOutputFolder() + File.separator + outputFileName).toFile());
 	}
 
-	private boolean createFile(String fileName, String basePath) throws IOException {
-		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
-		Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
-		return Paths.get(outputDirPath + File.separator + fileName).toFile().createNewFile();
+	private boolean createFile(String fileName) throws IOException {
+		Files.createDirectories(utils.getOutputFolder());
+		return Paths.get(utils.getOutputFolder() + File.separator + fileName).toFile().createNewFile();
 	}
 
-	private void csvToTurtle(String fileName, String basePath) throws IOException {
-		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
-		Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
-		csvToTurtleGenerator.setCsvAbsoluteFileName(outputDirPath + File.separator + fileName);
+	private void csvToTurtle(String fileName) throws IOException {
+		Files.createDirectories(utils.getOutputFolder());
+		csvToTurtleGenerator.setCsvAbsoluteFileName(utils.getOutputFolder() + File.separator + fileName);
 		int extensionPos = fileName.lastIndexOf('.');
 		String ttlFile = fileName.substring(0, extensionPos).concat(".ttl");
-		csvToTurtleGenerator.setTurtleAbsoluteFileName(outputDirPath + File.separator + ttlFile);
+		csvToTurtleGenerator.setTurtleAbsoluteFileName(utils.getOutputFolder() + File.separator + ttlFile);
 		csvToTurtleGenerator.saveTurtleFile();
 	}
 
-	public Corpus getOuputCorpus(String basePath) throws Exception {
+	public Corpus getOuputCorpus() throws Exception {
 
-		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
-		Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
+		Files.createDirectories(utils.getOutputFolder());
 		Corpus corpus = Factory.newCorpus("raiderCorpus");
-		
-		Arrays.stream(Paths.get(outputDirPath.toString()).toFile().listFiles()).filter(File::isFile).forEach(file -> {
-			System.out.printf("Iterating **** %s\n", file.getAbsolutePath());
-		});
-		
-		Arrays.stream(Paths.get(outputDirPath.toString()).toFile().listFiles()).filter(File::isFile).forEach(file -> {
+
+		Arrays.stream(utils.getOutputFolder().toFile().listFiles()).filter(File::isFile).forEach(file -> {
 			try {
+				System.out.printf("Iterating **** %s\n", file.getAbsolutePath());
 				corpus.add(Factory.newDocument(file.toURI().toURL(), "UTF-8"));
 			} catch (Exception ex) {
 				System.out.printf("Error while adding %s to corpus\n", ex.getMessage());
