@@ -3,6 +3,8 @@ package com.cisco.lms.nlp.controller;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,14 +83,20 @@ public class DataExtractionController {
 		Callable<ResponseEntity<Map<String, Object>>> callableResponseEntity = new Callable<ResponseEntity<Map<String, Object>>>() {
 			@Override
 			public ResponseEntity<Map<String, Object>> call() throws Exception {
-
-				String url = (String) bodyContent.get("rootUrl");
-				CrawlConfig config = configuration.build();
-				crawlerController.setConfiguration(config);
-				//crawl
-				crawlerController.crawl(url);
-				// term raid
-				termRaiderHelper.createTermBank(url);
+				CompletableFuture.runAsync(() -> {
+					try {
+						String url = (String) bodyContent.get("rootUrl");
+						CrawlConfig config = configuration.build();
+						crawlerController.setConfiguration(config);
+						// crawl
+						crawlerController.crawl(url);
+						// term raid
+						termRaiderHelper.createTermBank(url);
+					} catch (Exception ex) {
+						LOG.error(" Exception happened while crawl/termraid:{}", ex);
+						throw new RuntimeException(ex);
+					}
+				}, threadPoolExecutor);
 
 				Map<String, Object> retJson = new HashMap<>();
 				retJson.put("success", "Request accepted");
