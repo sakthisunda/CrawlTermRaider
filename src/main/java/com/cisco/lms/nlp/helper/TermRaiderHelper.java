@@ -51,7 +51,6 @@ public class TermRaiderHelper {
 	public void createTermBank(String rootUrl) throws Exception {
 
 		// Remove all non-word characters
-		String basePath = utils.urlToFolderName(rootUrl);
 		utils.setOutputFolder(rootUrl);
 
 		// Initialize term raider and execute after adding the copus of
