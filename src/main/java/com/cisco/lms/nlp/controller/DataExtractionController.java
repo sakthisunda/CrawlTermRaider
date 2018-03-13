@@ -83,11 +83,11 @@ public class DataExtractionController {
 			public ResponseEntity<Map<String, Object>> call() throws Exception {
 
 				String url = (String) bodyContent.get("rootUrl");
-				// termRaiderHelper.createTermBank(url);
-
 				CrawlConfig config = configuration.build();
 				crawlerController.setConfiguration(config);
+				//crawl
 				crawlerController.crawl(url);
+				// term raid
 				termRaiderHelper.createTermBank(url);
 
 				Map<String, Object> retJson = new HashMap<>();

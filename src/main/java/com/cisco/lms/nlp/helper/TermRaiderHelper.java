@@ -44,15 +44,19 @@ public class TermRaiderHelper {
 
 	@Autowired
 	Environment env;
+	
+	@Autowired
+	TermRaiderUtils utils;
 
 	public void createTermBank(String rootUrl) throws Exception {
 
 		// Remove all non-word characters
-		String basePath = rootUrl.replaceAll("[^\\p{L}\\p{Nd}]+", "_");
+		String basePath = utils.urlToFolderName(rootUrl);
+		utils.setOutputFolder(rootUrl);
 
 		// Initialize term raider and execute after adding the copus of documents
 		controller.init();
-		controller.setCorpus(getOuputCorpus());
+		controller.setCorpus(getOuputCorpus(basePath));
 		controller.execute();
 
 		Corpus outCorpus = controller.getCorpus();
@@ -92,36 +96,38 @@ public class TermRaiderHelper {
 	}
 
 	private void saveTermBank(AbstractTermbank termBank, String basePath, String outputFileName) throws GateException, IOException {
-		//String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
-		//Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
-		CsvGenerator.generateAndSaveCsv(termBank, 0, Paths.get(env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + outputFileName).toFile());
+		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
+		Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
+		CsvGenerator.generateAndSaveCsv(termBank, 0, Paths.get(outputDirPath + File.separator + outputFileName).toFile());
 	}
 
 	private boolean createFile(String fileName, String basePath) throws IOException {
-		//String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
-		//Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
-		
-		return Paths.get(env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + fileName).toFile().createNewFile();
+		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
+		Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
+		return Paths.get(outputDirPath + File.separator + fileName).toFile().createNewFile();
 	}
 
 	private void csvToTurtle(String fileName, String basePath) throws IOException {
-		//String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
-		//Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
-		csvToTurtleGenerator.setCsvAbsoluteFileName(env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + fileName);
+		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
+		Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
+		csvToTurtleGenerator.setCsvAbsoluteFileName(outputDirPath + File.separator + fileName);
 		int extensionPos = fileName.lastIndexOf('.');
 		String ttlFile = fileName.substring(0, extensionPos).concat(".ttl");
-		csvToTurtleGenerator.setTurtleAbsoluteFileName(env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + ttlFile);
+		csvToTurtleGenerator.setTurtleAbsoluteFileName(outputDirPath + File.separator + ttlFile);
 		csvToTurtleGenerator.saveTurtleFile();
 	}
 
-	public Corpus getOuputCorpus() throws Exception {
+	public Corpus getOuputCorpus(String basePath) throws Exception {
 
+		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + basePath;
+		Path outputDirPath = Files.createDirectories(Paths.get(outputDir));
 		Corpus corpus = Factory.newCorpus("raiderCorpus");
-		Arrays.stream(Paths.get(env.getProperty(DefaultConstants.OUTPUT_DIR_KEY)).toFile().listFiles()).filter(File::isFile).forEach(file -> {
+		
+		Arrays.stream(Paths.get(outputDirPath.toString()).toFile().listFiles()).filter(File::isFile).forEach(file -> {
 			System.out.printf("Iterating **** %s\n", file.getAbsolutePath());
 		});
 		
-		Arrays.stream(Paths.get(env.getProperty(DefaultConstants.OUTPUT_DIR_KEY)).toFile().listFiles()).filter(File::isFile).forEach(file -> {
+		Arrays.stream(Paths.get(outputDirPath.toString()).toFile().listFiles()).filter(File::isFile).forEach(file -> {
 			try {
 				corpus.add(Factory.newDocument(file.toURI().toURL(), "UTF-8"));
 			} catch (Exception ex) {

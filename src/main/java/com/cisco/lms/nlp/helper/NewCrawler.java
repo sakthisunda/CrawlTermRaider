@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -13,19 +12,21 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.safety.Whitelist;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
 
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.url.WebURL;
-import gate.Corpus;
-import gate.Factory;
 
 public class NewCrawler extends WebCrawler {
 
+	@Autowired
 	Environment env;
+
+	@Autowired
+	TermRaiderUtils termRaiderUtils;
 
 	private static final Pattern FILTERS = Pattern.compile(".*(\\.(css|js|gif|jpg" + "|png|mp3|mp4|zip|gz))$");
 
@@ -33,12 +34,10 @@ public class NewCrawler extends WebCrawler {
 
 	public NewCrawler(Environment env) throws IOException {
 		this.env = env;
-		setOutputDir(env.getProperty(DefaultConstants.OUTPUT_DIR_KEY));
 	}
 
 	public void setOutputDir(String outputDirName) throws IOException {
 		this.outputDir = outputDirName;
-		Files.createDirectories(Paths.get(outputDir));
 	}
 
 	@Override
@@ -67,7 +66,7 @@ public class NewCrawler extends WebCrawler {
 				Document htmlDoc = Jsoup.parse(htmlParseData.getHtml());
 				pw.write(StringEscapeUtils.unescapeHtml(Jsoup.clean(htmlDoc.select("p").html(), Whitelist.none())));
 			} catch (Exception ex) {
-				System.out.println(ex.getMessage());
+				ex.printStackTrace();
 			}
 
 			String html = htmlParseData.getHtml();
