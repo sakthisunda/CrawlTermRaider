@@ -1,5 +1,11 @@
 package com.cisco.lms.nlp.helper;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import javax.inject.Provider;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -17,12 +23,12 @@ public class CrawlerController {
 	Environment env;
 
 	@Autowired
-	TermRaiderCrawlerFactory factory;
-
+	TermRaiderUtils utils;	
+	
 	@Autowired
-	TermRaiderUtils utils;
+    private Provider<TermRaiderCrawlerFactory> termRaiderCrawlerFactoryProvider;
 
-	private int numberOfCrawlers = 7;
+	private int numberOfCrawlers = 10;
 	private CrawlConfig config;
 
 	public void setConfiguration(CrawlConfig configuration) {
@@ -31,16 +37,23 @@ public class CrawlerController {
 
 	}
 
-	public void crawl(String rootUrl) throws Exception {
+	public void crawl(List<String> seedUrls) throws Exception {
 
 		PageFetcher pageFetcher = new PageFetcher(config);
 		RobotstxtConfig robotstxtConfig = new RobotstxtConfig();
 		RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig, pageFetcher);
-		
-		factory.setOutputDir(rootUrl);
-		
+
 		CrawlController controller = new CrawlController(config, pageFetcher, robotstxtServer);
-		controller.addSeed(rootUrl);
+		
+		TermRaiderCrawlerFactory factory = termRaiderCrawlerFactoryProvider.get();
+		Optional.ofNullable(seedUrls).orElseGet(() -> Collections.<String>emptyList()).forEach( url -> {
+			controller.addSeed(url);
+			factory.addSeed(url);
+		});
+	
+		System.out.println(" Seed Urls:" + seedUrls);
+		factory.setOutputDir(seedUrls.get(0)); // output folders created based on first seed url	
+
 		controller.start(factory, numberOfCrawlers);
 
 	}

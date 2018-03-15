@@ -25,7 +25,7 @@ public class CrawlerConfiguation {
 		Files.createDirectories(Paths.get(crawlStorageFolder));
 		CrawlConfig config = new CrawlConfig();
 		config.setPolitenessDelay(1000);
-	    config.setMaxDepthOfCrawling( env.getProperty("crawler.depth") != null ? Integer.valueOf(env.getProperty("crawler.depth")) : 0);
+	    config.setMaxDepthOfCrawling( env.getProperty("crawler.depth") != null ? Integer.valueOf(env.getProperty("crawler.depth")) : 1);
 		config.setMaxPagesToFetch(1000);
 		config.setIncludeBinaryContentInCrawling(false);  
 		config.setCrawlStorageFolder(crawlStorageFolder);

@@ -1,10 +1,10 @@
 package com.cisco.lms.nlp.helper;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -28,16 +28,29 @@ public class NewCrawler extends WebCrawler {
 	@Autowired
 	TermRaiderUtils termRaiderUtils;
 
-	private static final Pattern FILTERS = Pattern.compile(".*(\\.(css|js|gif|jpg" + "|png|mp3|mp4|zip|gz))$");
+	private static final Pattern FILTERS = Pattern.compile(".*(\\.(css|js|bmp|gif|jpe?g" + "|png|tiff?|mid|mp2|mp3|mp4" + "|wav|avi|mov|mpeg|ram|m4v" + "|rm|smil|wmv|swf|wma|zip|rar|gz))$");
 
 	private String outputDir;
 
-	public NewCrawler(Environment env) throws IOException {
+	private List<String> domains = new ArrayList<>();
+
+	public NewCrawler(Environment env) {
 		this.env = env;
 	}
 
-	public void setOutputDir(String outputDirName) throws IOException {
+	public void setOutputDir(String outputDirName) {
 		this.outputDir = outputDirName;
+	}
+
+	public void setAllowedDomains(List<String> urlList) {
+		
+		urlList.forEach(url -> {
+			WebURL u = new WebURL();
+			u.setURL(url);
+			domains.add(u.getDomain());
+		});
+
+		System.out.println(" **** Allowed Domains : " + domains);
 	}
 
 	@Override
@@ -46,9 +59,11 @@ public class NewCrawler extends WebCrawler {
 		String href = url.getURL().toLowerCase();
 		String domain = url.getDomain();
 		System.out.printf("****************Domain name:%s ***************", domain);
-		if (FILTERS.matcher(href).matches()) {
+
+		if (FILTERS.matcher(href).matches() || !domains.contains(domain)) {
 			return false;
 		}
+
 		return true;
 
 	}
@@ -57,6 +72,7 @@ public class NewCrawler extends WebCrawler {
 	public void visit(Page page) {
 		String url = page.getWebURL().getURL();
 		System.out.printf("Visiting URL:%s\n", url);
+		System.out.printf("****************Domain name:%s ***************\n", page.getWebURL().getDomain());
 
 		if (page.getParseData() instanceof HtmlParseData) {
 			HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();

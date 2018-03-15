@@ -1,6 +1,7 @@
 package com.cisco.lms.nlp.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -85,13 +86,12 @@ public class DataExtractionController {
 			public ResponseEntity<Map<String, Object>> call() throws Exception {
 				CompletableFuture.runAsync(() -> {
 					try {
-						String url = (String) bodyContent.get("rootUrl");
+						List<String> urlList = (List<String>) bodyContent.get("rootUrl");
+						System.out.println(urlList);
 						CrawlConfig config = configuration.build();
-						crawlerController.setConfiguration(config);
-						// crawl
-						crawlerController.crawl(url);
-						// term raid
-						termRaiderHelper.createTermBank(url);
+						crawlerController.setConfiguration(config);						
+						crawlerController.crawl(urlList);
+						termRaiderHelper.createTermBank(urlList.get(0));
 					} catch (Exception ex) {
 						LOG.error(" Exception happened while crawl/termraid:{}", ex);
 						throw new RuntimeException(ex);
