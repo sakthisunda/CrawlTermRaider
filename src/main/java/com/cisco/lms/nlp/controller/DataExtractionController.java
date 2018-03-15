@@ -3,6 +3,7 @@ package com.cisco.lms.nlp.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.async.WebAsyncTask;
 
 import com.cisco.lms.nlp.helper.CrawlerConfiguation;
@@ -79,7 +81,7 @@ public class DataExtractionController {
 	}
 
 	@RequestMapping(method = RequestMethod.POST, value = "/crawl", produces = { MediaType.APPLICATION_JSON_VALUE })
-	public WebAsyncTask<ResponseEntity<Map<String, Object>>> crawl(@RequestBody Map<String, Object> bodyContent) {
+	public WebAsyncTask<ResponseEntity<Map<String, Object>>> crawl(@RequestBody Map<String, Object> bodyContent, @RequestParam(value = "depth", required = false) Integer depth) {
 
 		Callable<ResponseEntity<Map<String, Object>>> callableResponseEntity = new Callable<ResponseEntity<Map<String, Object>>>() {
 			@Override
@@ -89,6 +91,9 @@ public class DataExtractionController {
 						List<String> urlList = (List<String>) bodyContent.get("rootUrl");
 						System.out.println(urlList);
 						CrawlConfig config = configuration.build();
+						if(Optional.ofNullable(depth).isPresent()) {
+							config.setMaxDepthOfCrawling(depth);
+						}
 						crawlerController.setConfiguration(config);						
 						crawlerController.crawl(urlList);
 						termRaiderHelper.createTermBank(urlList.get(0));

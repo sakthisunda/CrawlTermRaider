@@ -58,6 +58,8 @@ public class TermRaiderHelper {
 		controller.init();
 		controller.setCorpus(getOuputCorpus());
 		controller.execute();
+		controller.cleanup();
+		
 
 		Corpus outCorpus = controller.getCorpus();
 		LOG.debug("temraider corpus generated:{}", outCorpus.getFeatures());
