@@ -1,5 +1,6 @@
 package com.cisco.lms.nlp.controller;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,22 +65,14 @@ public class DataExtractionController {
 	TermRaiderHelper termRaiderHelper;
 
 	@RequestMapping(method = RequestMethod.POST, value = "/crawl/from-file", produces = { MediaType.APPLICATION_JSON_VALUE })
-	public WebAsyncTask<ResponseEntity<Map<String, Object>>> crawl(@RequestParam("file") MultipartFile file) {
+	public WebAsyncTask<ResponseEntity<Map<String, Object>>> crawl(@RequestParam("file") MultipartFile file, @RequestParam(value = "depth", required = false) Integer depth, @RequestParam(value = "category", required = true) String category) throws Exception {
 
-		Callable<ResponseEntity<Map<String, Object>>> callableResponseEntity = new Callable<ResponseEntity<Map<String, Object>>>() {
-			@Override
-			public ResponseEntity<Map<String, Object>> call() throws Exception {
-
-				String fileContent = new String(file.getBytes());
-
-				Map<String, Object> retJson = new HashMap<>();
-				retJson.put("success", fileContent);
-				return new ResponseEntity<>(retJson, HttpStatus.ACCEPTED);
-			}
-
-		};
-
-		return new WebAsyncTask<>(600000L, threadPoolExecutor, callableResponseEntity);
+		String fileContent = new String(file.getBytes());
+		String[] urls = fileContent.split("[\\r\\n]+");
+		Map<String, Object> bodyContent = new HashMap<>();
+		bodyContent.put("category", category);
+		bodyContent.put("rootUrl", Arrays.asList(urls));
+		return crawl(bodyContent, depth);
 
 	}
 
@@ -92,7 +85,6 @@ public class DataExtractionController {
 				CompletableFuture.runAsync(() -> {
 					try {
 						List<String> urlList = (List<String>) bodyContent.get("rootUrl");
-						System.out.println(urlList);
 						CrawlConfig config = configuration.build();
 						if (Optional.ofNullable(depth).isPresent()) {
 							config.setMaxDepthOfCrawling(depth);
