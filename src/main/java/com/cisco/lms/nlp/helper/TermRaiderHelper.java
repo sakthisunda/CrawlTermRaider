@@ -8,6 +8,8 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,10 +50,11 @@ public class TermRaiderHelper {
 	@Autowired
 	TermRaiderUtils utils;
 
-	public void createTermBank(String rootUrl) throws Exception {
+	public void createTermBank(Map<String, Object> bodyContent) throws Exception {
 
 		// Remove all non-word characters
-		utils.setOutputFolder(rootUrl);
+		List<String> urlList = (List<String>) bodyContent.get("rootUrl");
+		utils.setOutputFolder(urlList.get(0));
 
 		// Initialize term raider and execute after adding the copus of
 		// documents
@@ -59,7 +62,6 @@ public class TermRaiderHelper {
 		controller.setCorpus(getOuputCorpus());
 		controller.execute();
 		controller.cleanup();
-		
 
 		Corpus outCorpus = controller.getCorpus();
 		LOG.debug("temraider corpus generated:{}", outCorpus.getFeatures());
@@ -89,7 +91,7 @@ public class TermRaiderHelper {
 		saveTermBank(annotationtermbank, annotateFileName);
 
 		// Turtle conversion
-		csvToTurtle(frequencyFileName);
+		csvToTurtle(frequencyFileName, (String) bodyContent.get("category"));
 
 	}
 
@@ -107,13 +109,13 @@ public class TermRaiderHelper {
 		return Paths.get(utils.getOutputFolder() + File.separator + fileName).toFile().createNewFile();
 	}
 
-	private void csvToTurtle(String fileName) throws IOException {
+	private void csvToTurtle(String fileName, String category) throws IOException {
 		Files.createDirectories(utils.getOutputFolder());
 		csvToTurtleGenerator.setCsvAbsoluteFileName(utils.getOutputFolder() + File.separator + fileName);
 		int extensionPos = fileName.lastIndexOf('.');
 		String ttlFile = fileName.substring(0, extensionPos).concat(".ttl");
 		csvToTurtleGenerator.setTurtleAbsoluteFileName(utils.getOutputFolder() + File.separator + ttlFile);
-		csvToTurtleGenerator.saveTurtleFile();
+		csvToTurtleGenerator.saveTurtleFile(category);
 	}
 
 	public Corpus getOuputCorpus() throws Exception {

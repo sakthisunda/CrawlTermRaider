@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.async.WebAsyncTask;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.cisco.lms.nlp.helper.CrawlerConfiguation;
 import com.cisco.lms.nlp.helper.CrawlerController;
@@ -63,14 +63,17 @@ public class DataExtractionController {
 	@Autowired
 	TermRaiderHelper termRaiderHelper;
 
-	@RequestMapping(method = RequestMethod.GET, value = "/crawl", produces = { MediaType.APPLICATION_JSON_VALUE })
-	public WebAsyncTask<ResponseEntity<Map<String, String>>> crawl() {
+	@RequestMapping(method = RequestMethod.POST, value = "/crawl/from-file", produces = { MediaType.APPLICATION_JSON_VALUE })
+	public WebAsyncTask<ResponseEntity<Map<String, Object>>> crawl(@RequestParam("file") MultipartFile file) {
 
-		Callable<ResponseEntity<Map<String, String>>> callableResponseEntity = new Callable<ResponseEntity<Map<String, String>>>() {
+		Callable<ResponseEntity<Map<String, Object>>> callableResponseEntity = new Callable<ResponseEntity<Map<String, Object>>>() {
 			@Override
-			public ResponseEntity<Map<String, String>> call() throws Exception {
-				Map<String, String> retJson = new HashMap<>();
-				retJson.put("success", "Request Successful.");
+			public ResponseEntity<Map<String, Object>> call() throws Exception {
+
+				String fileContent = new String(file.getBytes());
+
+				Map<String, Object> retJson = new HashMap<>();
+				retJson.put("success", fileContent);
 				return new ResponseEntity<>(retJson, HttpStatus.ACCEPTED);
 			}
 
@@ -91,12 +94,12 @@ public class DataExtractionController {
 						List<String> urlList = (List<String>) bodyContent.get("rootUrl");
 						System.out.println(urlList);
 						CrawlConfig config = configuration.build();
-						if(Optional.ofNullable(depth).isPresent()) {
+						if (Optional.ofNullable(depth).isPresent()) {
 							config.setMaxDepthOfCrawling(depth);
 						}
-						crawlerController.setConfiguration(config);						
+						crawlerController.setConfiguration(config);
 						crawlerController.crawl(urlList);
-						termRaiderHelper.createTermBank(urlList.get(0));
+						termRaiderHelper.createTermBank(bodyContent);
 					} catch (Exception ex) {
 						LOG.error(" Exception happened while crawl/termraid:{}", ex);
 						throw new RuntimeException(ex);

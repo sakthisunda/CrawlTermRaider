@@ -1,4 +1,8 @@
-<tag:stardog:api:{0}> rdf:type owl:NamedIndividual ,<http://clks.cisco.com/km/TermRaider> ;
-   <http://clks.cisco.com/km/weight> {1} ;
-   rdfs:label "{2}" .
+<tag:stardog:api:$id> rdf:type owl:NamedIndividual ,<http://clks.cisco.com/km/TermRaider> ;
+   <http://clks.cisco.com/km/weight> $weight ;
+#if($category)
+   ; dcterms:source "$category" ;
+#end      
+   rdfs:label "$label" .
+   
    

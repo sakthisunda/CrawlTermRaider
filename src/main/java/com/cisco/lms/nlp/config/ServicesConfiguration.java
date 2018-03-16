@@ -16,9 +16,13 @@
 
 package com.cisco.lms.nlp.config;
 
+import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.exception.VelocityException;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +37,7 @@ import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.ui.velocity.VelocityEngineFactory;
 
 @Configuration
 @ComponentScan(basePackages = { "com.cisco.lms.nlp.helper" })
@@ -74,4 +79,13 @@ public class ServicesConfiguration implements AsyncConfigurer {
 		return new SimpleAsyncUncaughtExceptionHandler();
 	}
 
+	@Bean
+	public VelocityEngine getVelocityEngine() throws IOException {
+		VelocityEngineFactory factory = new VelocityEngineFactory();
+		Properties props = new Properties();
+		props.put("resource.loader", "class");
+		props.put("class.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+		factory.setVelocityProperties(props);
+		return factory.createVelocityEngine();
+	}
 }

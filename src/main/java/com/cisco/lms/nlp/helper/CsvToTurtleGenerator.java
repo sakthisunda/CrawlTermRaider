@@ -4,14 +4,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.MessageFormat;
-
-import javax.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -21,28 +20,11 @@ public class CsvToTurtleGenerator {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CsvToTurtleGenerator.class);
 
-	@Value(value = "classpath:termraider.vm")
-	private Resource raiderTripleFile;
-
-	private MessageFormat frequencyTermTriple;
-
 	private String csvAbsoluteFileName;
 	private String turtleAbsoluteFileName;
 
-	/**
-	 * Reads triple template file and keep that in String Helps in reusing the
-	 * template; not reading from disk all the time
-	 * 
-	 * @throws IOException
-	 */
-	@PostConstruct
-	public void init() throws IOException {
-
-		byte[] b = new byte[1024];
-		int byteSize = raiderTripleFile.getInputStream().read(b);
-		frequencyTermTriple = new MessageFormat(new String(b, 0, byteSize));
-
-	}
+	@Autowired
+	private TemplateTranformer templateTranformer;
 
 	public String getCsvAbsoluteFileName() {
 		return csvAbsoluteFileName;
@@ -67,7 +49,7 @@ public class CsvToTurtleGenerator {
 	 * 
 	 * @throws IOException
 	 */
-	public void saveTurtleFile() throws IOException {
+	public void saveTurtleFile(String category) throws IOException {
 
 		try (FileWriter fw = new FileWriter(turtleAbsoluteFileName); CSVReader reader = new CSVReader(new FileReader(csvAbsoluteFileName), ',', '"', 1);) {
 			String[] nextLine;
@@ -75,8 +57,14 @@ public class CsvToTurtleGenerator {
 
 				if (DefaultConstants.MULTI_WORD.equalsIgnoreCase(nextLine[2]) && nextLine[0].split(" ").length == 2) {
 
-					Object[] testArgs = { DigestUtils.md5Hex(nextLine[0]), new Integer(nextLine[5]), nextLine[0] };
-					fw.write(String.format("%s%n", frequencyTermTriple.format(testArgs)));
+					Map<String, Object> params = new HashMap<>();
+					params.put("id", DigestUtils.md5Hex(nextLine[0]));
+					params.put("weight", nextLine[5]);
+					params.put("label", nextLine[0]);
+					params.put("category", category);
+
+					String triple = templateTranformer.tranformVelocityTemplate("termraider.vm", params);
+					fw.write(triple);
 					fw.flush();
 
 				}
