@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -32,7 +33,7 @@ public class NewCrawler extends WebCrawler {
 
 	private String outputDir;
 
-	private List<String> domains = new ArrayList<>();
+	private Set<String> domains = new HashSet<>();
 
 	public NewCrawler(Environment env) {
 		this.env = env;

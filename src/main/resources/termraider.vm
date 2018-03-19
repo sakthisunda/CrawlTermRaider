@@ -1,7 +1,7 @@
 <tag:stardog:api:$id> rdf:type owl:NamedIndividual ,<http://clks.cisco.com/km/TermRaider> ;
    <http://clks.cisco.com/km/weight> $weight ;
 #if($category)
-   ; dcterms:source "$category" ;
+   dcterms:source "$category" ;
 #end      
    rdfs:label "$label" .
    
