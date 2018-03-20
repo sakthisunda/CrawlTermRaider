@@ -25,27 +25,23 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-
 @Configuration
-@ComponentScan(basePackages = { "com.cisco.lms.nlp.controller"})
+@ComponentScan(basePackages = { "com.cisco.lms.nlp.controller" })
 @EnableWebMvc
 @PropertySource("classpath:term-raider.properties")
-public class WebConfiguration extends WebMvcConfigurerAdapter  {
+public class WebConfiguration extends WebMvcConfigurerAdapter {
 
 	@Autowired
 	private Environment env;
 
 	@Bean
 	public String gateFileFolder() {
-		System.out.printf(" Gate File Folder---->%s\n" , env.getProperty("gate.file.folder"));
 		return env.getProperty("gate.file.folder");
 	}
-	
+
 	@Bean
 	public String raiderOutputDir() {
-		System.out.printf(" Raider output dir---->%s\n" , env.getProperty("raider.output.dir"));
 		return env.getProperty("raider.output.dir");
 	}
-
 
 }
