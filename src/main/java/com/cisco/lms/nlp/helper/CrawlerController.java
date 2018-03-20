@@ -31,7 +31,7 @@ public class CrawlerController {
 	private Provider<TermRaiderCrawlerFactory> termRaiderCrawlerFactoryProvider;
 
 	private static final Logger LOG = LoggerFactory.getLogger(CrawlerController.class);
-	private int numberOfCrawlers = 10;
+	private int numberOfCrawlers = 25;
 	private CrawlConfig config;
 
 	public void setConfiguration(CrawlConfig configuration) {
