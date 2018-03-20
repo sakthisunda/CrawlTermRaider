@@ -125,10 +125,10 @@ public class TermRaiderHelper {
 
 		Arrays.stream(utils.getOutputFolder().toFile().listFiles()).filter(File::isFile).forEach(file -> {
 			try {
-				System.out.printf("Iterating **** %s\n", file.getAbsolutePath());
+				LOG.debug("Iterating **** {}", file.getAbsolutePath());
 				corpus.add(Factory.newDocument(file.toURI().toURL(), "UTF-8"));
 			} catch (Exception ex) {
-				System.out.printf("Error while adding %s to corpus\n", ex.getMessage());
+				LOG.debug("Error while adding {} to corpus", ex.getMessage());
 			}
 		});
 

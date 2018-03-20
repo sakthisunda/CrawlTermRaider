@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import javax.inject.Provider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -23,11 +25,12 @@ public class CrawlerController {
 	Environment env;
 
 	@Autowired
-	TermRaiderUtils utils;	
-	
-	@Autowired
-    private Provider<TermRaiderCrawlerFactory> termRaiderCrawlerFactoryProvider;
+	TermRaiderUtils utils;
 
+	@Autowired
+	private Provider<TermRaiderCrawlerFactory> termRaiderCrawlerFactoryProvider;
+
+	private static final Logger LOG = LoggerFactory.getLogger(CrawlerController.class);
 	private int numberOfCrawlers = 10;
 	private CrawlConfig config;
 
@@ -44,15 +47,16 @@ public class CrawlerController {
 		RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig, pageFetcher);
 
 		CrawlController controller = new CrawlController(config, pageFetcher, robotstxtServer);
-		
+
 		TermRaiderCrawlerFactory factory = termRaiderCrawlerFactoryProvider.get();
-		Optional.ofNullable(seedUrls).orElseGet(() -> Collections.<String>emptyList()).forEach( url -> {
+		Optional.ofNullable(seedUrls).orElseGet(() -> Collections.<String>emptyList()).forEach(url -> {
 			controller.addSeed(url);
 			factory.addSeed(url);
 		});
-	
-		System.out.println(" Seed Urls:" + seedUrls);
-		factory.setOutputDir(seedUrls.get(0)); // output folders created based on first seed url	
+
+		LOG.debug("Seed Urls:{}", seedUrls);
+		factory.setOutputDir(seedUrls.get(0)); // output folders created based
+												// on first seed url
 
 		controller.start(factory, numberOfCrawlers);
 

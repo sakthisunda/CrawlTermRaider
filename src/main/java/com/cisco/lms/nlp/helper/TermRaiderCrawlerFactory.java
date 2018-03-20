@@ -8,6 +8,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
@@ -18,6 +20,8 @@ import edu.uci.ics.crawler4j.crawler.CrawlController;
 @Component
 @Scope(value = "prototype")
 public class TermRaiderCrawlerFactory implements CrawlController.WebCrawlerFactory<NewCrawler> {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(TermRaiderCrawlerFactory.class);
 
 	@Autowired
 	Environment env;
@@ -30,7 +34,7 @@ public class TermRaiderCrawlerFactory implements CrawlController.WebCrawlerFacto
 	private List<String> urlList = new ArrayList<>();
 	
 	public TermRaiderCrawlerFactory() {
-		System.out.println(" *********************************** Crawler Factory ****************************");
+		LOG.debug(" *********************************** Crawler Factory ****************************");
 	}
 
 	public void setOutputDir(String url) throws IOException {
