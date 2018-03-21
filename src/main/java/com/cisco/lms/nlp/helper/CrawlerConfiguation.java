@@ -28,10 +28,11 @@ public class CrawlerConfiguation {
 	public CrawlConfig build() throws Exception {
 		Files.createDirectories(Paths.get(crawlStorageFolder));
 		CrawlConfig config = new CrawlConfig();
+		config.setMaxDownloadSize(5000000);
+		config.setIncludeBinaryContentInCrawling(true); //allows pdf content download
 		config.setPolitenessDelay(1000);
 		config.setMaxDepthOfCrawling(env.getProperty("crawler.depth") != null ? Integer.valueOf(env.getProperty("crawler.depth")) : 1);
 		config.setMaxPagesToFetch(1000);
-		config.setIncludeBinaryContentInCrawling(false);
 		config.setCrawlStorageFolder(crawlStorageFolder);
 		config.setFollowRedirects(false);
 		LOG.debug("Configuration:{}", config.toString());

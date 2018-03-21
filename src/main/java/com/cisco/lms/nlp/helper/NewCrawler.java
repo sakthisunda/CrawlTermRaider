@@ -2,6 +2,8 @@ package com.cisco.lms.nlp.helper;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,7 +20,9 @@ import org.springframework.core.env.Environment;
 
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
+import edu.uci.ics.crawler4j.parser.BinaryParseData;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
+import edu.uci.ics.crawler4j.parser.ParseData;
 import edu.uci.ics.crawler4j.url.WebURL;
 
 public class NewCrawler extends WebCrawler {
@@ -76,12 +80,17 @@ public class NewCrawler extends WebCrawler {
 
 		String url = page.getWebURL().getURL();
 		LOG.debug("Visiting URL:{}", url);
+		ParseData data = page.getParseData();
+		LOG.debug(String.format("%s is instance of %s", url, data.getClass().getTypeName()));
+		String extension = url.substring(url.lastIndexOf("."));
+		String fileName = url.substring(0, url.lastIndexOf(".")).replaceAll("[^\\p{L}\\p{Nd}]+", "_") + extension;
 
-		if (page.getParseData() instanceof HtmlParseData) {
-			HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
+		if (data instanceof HtmlParseData) {
+
+			HtmlParseData htmlParseData = (HtmlParseData) data;
 			String text = htmlParseData.getText();
 
-			try (PrintWriter pw = new PrintWriter(outputDir + File.separator + url.replaceAll("[^\\p{L}\\p{Nd}]+", "_"))) {
+			try (PrintWriter pw = new PrintWriter(outputDir + File.separator + fileName)) {
 				Document htmlDoc = Jsoup.parse(htmlParseData.getHtml());
 				pw.write(StringEscapeUtils.unescapeHtml(Jsoup.clean(htmlDoc.select("p").html(), Whitelist.none())));
 			} catch (Exception ex) {
@@ -91,9 +100,15 @@ public class NewCrawler extends WebCrawler {
 			String html = htmlParseData.getHtml();
 			Set<WebURL> links = htmlParseData.getOutgoingUrls();
 
-			LOG.debug("Text length:{} ", text.length());
-			LOG.debug("Html length:{} ", html.length());
-			LOG.debug("Number of outgoing links:{} ", links.size());
+
+		} else if (data instanceof BinaryParseData) {
+
+			try {
+				Files.write(Paths.get(outputDir + File.separator + fileName), page.getContentData());
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+
 		}
 	}
 }
