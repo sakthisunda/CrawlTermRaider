@@ -35,7 +35,7 @@ public class NewCrawler extends WebCrawler {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NewCrawler.class);
 
-	private static final Pattern FILTERS = Pattern.compile(".*(\\.(css|js|bmp|gif|jpe?g" + "|png|tiff?|mid|mp2|mp3|mp4" + "|wav|avi|mov|mpeg|ram|m4v" + "|rm|smil|wmv|swf|wma|zip|rar|gz))$");
+	private static final Pattern FILTERS = Pattern.compile(".*(\\.(svg|css|js|bmp|gif|ico|jpe?g" + "|png|tiff?|mid|mp2|mp3|mp4" + "|wav|avi|mov|mpeg|ram|m4v" + "|rm|smil|wmv|swf|wma|zip|rar|gz))$");
 
 	private String outputDir;
 
@@ -65,7 +65,7 @@ public class NewCrawler extends WebCrawler {
 
 		String href = url.getURL().toLowerCase();
 		String domain = url.getDomain();
-		LOG.debug("****************Domain name: {} ***************", domain);
+		LOG.info("****************Domain name: {} ***************", domain);
 
 		if (FILTERS.matcher(href).matches() || !domains.contains(domain)) {
 			return false;
@@ -81,32 +81,40 @@ public class NewCrawler extends WebCrawler {
 		String url = page.getWebURL().getURL();
 		LOG.debug("Visiting URL:{}", url);
 		ParseData data = page.getParseData();
-		LOG.debug(String.format("%s is instance of %s", url, data.getClass().getTypeName()));
-		String extension = url.substring(url.lastIndexOf("."));
-		String fileName = url.substring(0, url.lastIndexOf(".")).replaceAll("[^\\p{L}\\p{Nd}]+", "_") + extension;
+		LOG.info(String.format("%s is instance of %s", url, data.getClass().getTypeName()));
+		String fileName = url.replaceAll("[^\\p{L}\\p{Nd}]+", "_");
 
 		if (data instanceof HtmlParseData) {
 
 			HtmlParseData htmlParseData = (HtmlParseData) data;
 			String text = htmlParseData.getText();
 
-			try (PrintWriter pw = new PrintWriter(outputDir + File.separator + fileName)) {
+			try (PrintWriter pw = new PrintWriter(outputDir + File.separator + fileName + ".txt")) {
 				Document htmlDoc = Jsoup.parse(htmlParseData.getHtml());
 				pw.write(StringEscapeUtils.unescapeHtml(Jsoup.clean(htmlDoc.select("p").html(), Whitelist.none())));
 			} catch (Exception ex) {
-				ex.printStackTrace();
+				LOG.info("Exception parsing Html data:{}", ex);
 			}
 
 			String html = htmlParseData.getHtml();
 			Set<WebURL> links = htmlParseData.getOutgoingUrls();
 
-
 		} else if (data instanceof BinaryParseData) {
 
 			try {
-				Files.write(Paths.get(outputDir + File.separator + fileName), page.getContentData());
+				String extension = url.substring(url.lastIndexOf('.'));
+				String path = outputDir + File.separator + fileName;
+
+				if (extension.indexOf('/') == -1) {
+					path = path + extension;
+				} else {
+					LOG.info(" Adding .txt extension for path:{}", path);
+					path = path + ".txt";
+
+				}
+				Files.write(Paths.get(path), page.getContentData());
 			} catch (Exception ex) {
-				ex.printStackTrace();
+				LOG.info("Exception parsing binary data:{}", ex);
 			}
 
 		}
