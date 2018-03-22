@@ -34,7 +34,7 @@ public class TermRaiderCrawlerFactory implements CrawlController.WebCrawlerFacto
 	private List<String> urlList = new ArrayList<>();
 	
 	public TermRaiderCrawlerFactory() {
-		LOG.debug(" *********************************** Crawler Factory ****************************");
+		LOG.info(" *********************************** Crawler Factory ****************************");
 	}
 
 	public void setOutputDir(String url) throws IOException {

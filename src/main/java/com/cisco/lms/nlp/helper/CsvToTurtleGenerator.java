@@ -4,10 +4,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,9 @@ public class CsvToTurtleGenerator {
 
 	@Autowired
 	private TemplateTranformer templateTranformer;
+
+	@Autowired
+	TermRaiderUtils utils;
 
 	public String getCsvAbsoluteFileName() {
 		return csvAbsoluteFileName;
@@ -53,6 +58,8 @@ public class CsvToTurtleGenerator {
 
 		try (FileWriter fw = new FileWriter(turtleAbsoluteFileName); CSVReader reader = new CSVReader(new FileReader(csvAbsoluteFileName), ',', '"', 1);) {
 			String[] nextLine;
+
+			String creationDate = utils.getZuluDate();
 			while ((nextLine = reader.readNext()) != null) {
 
 				if (DefaultConstants.MULTI_WORD.equalsIgnoreCase(nextLine[2]) && nextLine[0].split(" ").length == 2) {
@@ -62,7 +69,7 @@ public class CsvToTurtleGenerator {
 					params.put("weight", nextLine[5]);
 					params.put("label", nextLine[0]);
 					params.put("category", category);
-
+					params.put("creationDate", creationDate);
 					String triple = templateTranformer.tranformVelocityTemplate("termraider.vm", params);
 					fw.write(triple);
 					fw.flush();

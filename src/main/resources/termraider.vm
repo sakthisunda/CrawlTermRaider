@@ -3,6 +3,9 @@
 #if($category)
    dcterms:source "$category" ;
 #end      
+#if($creationDate)
+   dcterms:created "$creationDate" ;
+#end
    rdfs:label "$label" .
    
    

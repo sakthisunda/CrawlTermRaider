@@ -54,7 +54,7 @@ public class CrawlerController {
 			factory.addSeed(url);
 		});
 
-		LOG.debug("Seed Urls:{}", seedUrls);
+		LOG.info("Seed Urls:{}", seedUrls);
 		factory.setOutputDir(seedUrls.get(0)); // output folders created based
 												// on first seed url
 

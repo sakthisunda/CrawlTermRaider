@@ -72,12 +72,12 @@ public class DataExtractionController {
 		Map<String, Object> bodyContent = new HashMap<>();
 		bodyContent.put("category", category);
 		bodyContent.put("rootUrl", Arrays.asList(urls));
-		return crawl(bodyContent, depth);
+		return crawl(bodyContent, depth, category);
 
 	}
 
 	@RequestMapping(method = RequestMethod.POST, value = "/crawl", produces = { MediaType.APPLICATION_JSON_VALUE })
-	public WebAsyncTask<ResponseEntity<Map<String, Object>>> crawl(@RequestBody Map<String, Object> bodyContent, @RequestParam(value = "depth", required = false) Integer depth) {
+	public WebAsyncTask<ResponseEntity<Map<String, Object>>> crawl(@RequestBody Map<String, Object> bodyContent, @RequestParam(value = "depth", required = false) Integer depth, @RequestParam(value = "category", required = false) String category) {
 
 		Callable<ResponseEntity<Map<String, Object>>> callableResponseEntity = new Callable<ResponseEntity<Map<String, Object>>>() {
 			@Override
@@ -88,6 +88,9 @@ public class DataExtractionController {
 						CrawlConfig config = configuration.build();
 						if (Optional.ofNullable(depth).isPresent()) {
 							config.setMaxDepthOfCrawling(depth);
+						}
+						if (Optional.ofNullable(category).isPresent()) {
+							bodyContent.put("category", category);
 						}
 						crawlerController.setConfiguration(config);
 						crawlerController.crawl(urlList);

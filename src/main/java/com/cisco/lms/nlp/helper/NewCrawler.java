@@ -57,7 +57,7 @@ public class NewCrawler extends WebCrawler {
 			domains.add(u.getDomain());
 		});
 
-		LOG.debug(" **** Allowed Domains : {}", domains);
+		LOG.info(" **** Allowed Domains for {}: {}", this.getClass().getName(), domains);
 	}
 
 	@Override
@@ -65,9 +65,9 @@ public class NewCrawler extends WebCrawler {
 
 		String href = url.getURL().toLowerCase();
 		String domain = url.getDomain();
-		LOG.info("****************Domain name: {} ***************", domain);
 
 		if (FILTERS.matcher(href).matches() || !domains.contains(domain)) {
+			LOG.info("Skipping domain: {} for {} ***************", domain, href);
 			return false;
 		}
 
@@ -87,7 +87,6 @@ public class NewCrawler extends WebCrawler {
 		if (data instanceof HtmlParseData) {
 
 			HtmlParseData htmlParseData = (HtmlParseData) data;
-			String text = htmlParseData.getText();
 
 			try (PrintWriter pw = new PrintWriter(outputDir + File.separator + fileName + ".txt")) {
 				Document htmlDoc = Jsoup.parse(htmlParseData.getHtml());
@@ -95,9 +94,6 @@ public class NewCrawler extends WebCrawler {
 			} catch (Exception ex) {
 				LOG.info("Exception parsing Html data:{}", ex);
 			}
-
-			String html = htmlParseData.getHtml();
-			Set<WebURL> links = htmlParseData.getOutgoingUrls();
 
 		} else if (data instanceof BinaryParseData) {
 
@@ -117,6 +113,8 @@ public class NewCrawler extends WebCrawler {
 				LOG.info("Exception parsing binary data:{}", ex);
 			}
 
+		} else {
+			LOG.warn("******** Skipping url {} with data type: {} ********", url, data.getClass().getTypeName());
 		}
 	}
 }
