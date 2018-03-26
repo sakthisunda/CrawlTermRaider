@@ -8,6 +8,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Provider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +21,8 @@ import edu.uci.ics.crawler4j.crawler.CrawlController;
 
 @Component
 @Scope(value = "prototype")
-public class TermRaiderCrawlerFactory implements CrawlController.WebCrawlerFactory<NewCrawler> {
-	
+public class TermRaiderCrawlerFactory implements CrawlController.WebCrawlerFactory<NlpCrawler> {
+
 	private static final Logger LOG = LoggerFactory.getLogger(TermRaiderCrawlerFactory.class);
 
 	@Autowired
@@ -29,10 +31,13 @@ public class TermRaiderCrawlerFactory implements CrawlController.WebCrawlerFacto
 	@Autowired
 	TermRaiderUtils utils;
 
+	@Autowired
+	private Provider<NlpCrawler> nlpCrawler;
+
 	private Path outputDir;
 
 	private List<String> urlList = new ArrayList<>();
-	
+
 	public TermRaiderCrawlerFactory() {
 		LOG.info(" *********************************** Crawler Factory ****************************");
 	}
@@ -52,9 +57,9 @@ public class TermRaiderCrawlerFactory implements CrawlController.WebCrawlerFacto
 	}
 
 	@Override
-	public NewCrawler newInstance() throws IOException {
-		NewCrawler crawler = new NewCrawler(env);
-		crawler.setOutputDir(getOutputDir().toString());
+	public NlpCrawler newInstance() throws IOException {
+		NlpCrawler crawler = nlpCrawler.get();
+		crawler.setFactory(this);
 		crawler.setAllowedDomains(urlList);
 		return crawler;
 	}

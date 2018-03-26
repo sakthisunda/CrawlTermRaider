@@ -23,10 +23,7 @@ public class CrawlerController {
 
 	@Autowired
 	Environment env;
-
-	@Autowired
-	TermRaiderUtils utils;
-
+	
 	@Autowired
 	private Provider<TermRaiderCrawlerFactory> termRaiderCrawlerFactoryProvider;
 

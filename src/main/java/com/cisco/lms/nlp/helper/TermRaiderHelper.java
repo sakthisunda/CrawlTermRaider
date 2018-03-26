@@ -3,7 +3,6 @@ package com.cisco.lms.nlp.helper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -34,9 +33,6 @@ public class TermRaiderHelper {
 	@Autowired
 	@Qualifier("theApp")
 	gate.CorpusController controller;
-
-	@Autowired
-	NlpCrawler nlpCrawler;
 
 	@Autowired
 	CsvToTurtleGenerator csvToTurtleGenerator;
@@ -123,6 +119,7 @@ public class TermRaiderHelper {
 		Files.createDirectories(utils.getOutputFolder());
 		Corpus corpus = Factory.newCorpus("raiderCorpus");
 
+		System.out.println("*** Collection output from : " +  utils.getOutputFolder());
 		Arrays.stream(utils.getOutputFolder().toFile().listFiles()).filter(File::isFile).forEach(file -> {
 			try {
 				LOG.debug("Iterating **** {}", file.getAbsolutePath());

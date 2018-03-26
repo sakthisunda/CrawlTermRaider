@@ -28,7 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cisco.lms.nlp.helper.CrawlerConfiguation;
 import com.cisco.lms.nlp.helper.CrawlerController;
 import com.cisco.lms.nlp.helper.CsvToTurtleGenerator;
-import com.cisco.lms.nlp.helper.NlpCrawler;
+
 import com.cisco.lms.nlp.helper.TermRaiderHelper;
 
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
@@ -42,9 +42,6 @@ public class DataExtractionController {
 	@Autowired
 	@Qualifier("theApp")
 	gate.CorpusController controller;
-
-	@Autowired
-	NlpCrawler nlpCrawler;
 
 	@Autowired
 	AsyncTaskExecutor threadPoolExecutor;

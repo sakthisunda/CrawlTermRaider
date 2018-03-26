@@ -1,90 +1,97 @@
 package com.cisco.lms.nlp.helper;
 
-import java.net.MalformedURLException;
+import java.io.File;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import crawl.CrawlPR;
-import gate.Corpus;
-import gate.Factory;
-import gate.creole.ExecutionException;
-import gate.creole.ResourceInstantiationException;
+import edu.uci.ics.crawler4j.crawler.Page;
+import edu.uci.ics.crawler4j.crawler.WebCrawler;
+import edu.uci.ics.crawler4j.parser.BinaryParseData;
+import edu.uci.ics.crawler4j.parser.HtmlParseData;
+import edu.uci.ics.crawler4j.parser.ParseData;
+import edu.uci.ics.crawler4j.url.WebURL;
 
 @Component
-public class NlpCrawler {
-	
+@Scope(value = "prototype")
+public class NlpCrawler extends WebCrawler {
+
+	@Autowired
+	TermRaiderUtils termRaiderUtils;
+
 	private static final Logger LOG = LoggerFactory.getLogger(NlpCrawler.class);
 
-	private CrawlPR crawler;
+	private static final Pattern FILTERS = Pattern.compile(".*(\\.(svg|css|js|bmp|gif|ico|jpe?g" + "|png|tiff?|mid|mp2|mp3|mp4" + "|wav|avi|mov|mpeg|ram|m4v" + "|rm|smil|wmv|swf|wma|zip|rar|gz))$");
+
+	private TermRaiderCrawlerFactory factory;
+
+	private Set<String> domains = new HashSet<>();
 
 	public NlpCrawler() {
+		LOG.info(" *********************************** Crawler Instance Created ****************************");
+	}
 
-		crawler = new CrawlPR();
-		crawler.setKeywordsCaseSensitive(true);
-		crawler.setConvertXmlTypes(true);
-		crawler.setDomain(crawl.DomainMode.WEB);
-		crawler.setDfs(false);
-		crawler.setMaxPageSize(100);
-		crawler.setStopAfter(5);
+	public void setFactory(TermRaiderCrawlerFactory factory) {
+
+		this.factory = factory;
+	}
+
+	public void setAllowedDomains(List<String> urlList) {
+
+		urlList.forEach(url -> {
+			WebURL u = new WebURL();
+			u.setURL(url);
+			domains.add(u.getDomain());
+		});
+
+		LOG.info(" **** Allowed Domains for {}: {}", this.getClass().getName(), domains);
+	}
+
+	@Override
+	public boolean shouldVisit(Page referringPage, WebURL url) {
+
+		String href = url.getURL().toLowerCase();
+		String domain = url.getDomain();
+
+		if (FILTERS.matcher(href).matches() || !domains.contains(domain)) {
+			LOG.info("Skipping domain: {} for {} ***************", domain, href);
+			return false;
+		}
+
+		return true;
 
 	}
 
-	public void execute() throws ExecutionException {
+	@Override
+	public void visit(Page page) {
 
-		crawler.execute();
+		String url = page.getWebURL().getURL();
+		LOG.debug("Visiting URL:{}", url);
+		ParseData data = page.getParseData();
+		LOG.info(String.format("%s is instance of %s", url, data.getClass().getTypeName()));
+		String fileName = url.replaceAll("[^\\p{L}\\p{Nd}]+", "_");
+
+		if (data instanceof HtmlParseData) {
+
+			termRaiderUtils.writeHtmlFilteredData(data, factory.getOutputDir() + File.separator + fileName + ".html");
+
+		} else if (data instanceof BinaryParseData) {
+
+			String path = factory.getOutputDir() + File.separator + fileName;
+			termRaiderUtils.writeBinaryData(url, page.getContentData(), path);
+
+		} else {
+
+			LOG.warn("******** Skipping url {} with data type: {} ********", url, data.getClass().getTypeName());
+
+		}
+
 	}
-
-	public void setCorpus(String name) throws ResourceInstantiationException, MalformedURLException {
-		System.out.printf("Depth=%d\n", this.getDepth());
-		Corpus corpus = Factory.newCorpus(name);
-		crawler.setOutputCorpus(corpus);
-	}
-
-	public Corpus getOutputCorpus() {
-
-		return crawler.getOutputCorpus();
-	}
-
-	public String getRootUrl() {
-		return crawler.getRoot();
-	}
-
-	public void setRootUrl(String rootUrl) {
-		crawler.setRoot(rootUrl);
-	}
-
-	public int getDepth() {
-		return crawler.getDepth();
-	}
-
-	public void setDepth(int depth) {
-		crawler.setDepth(depth);
-	}
-
-	public boolean getIsDepthFirst() {
-		return crawler.getDfs();
-	}
-
-	public void setIsDepthFirst(boolean isDepthFirst) {
-		crawler.setDfs(isDepthFirst);
-	}
-
-	public int getMaxPageSize() {
-		return crawler.getMaxPageSize();
-	}
-
-	public void setMaxPageSize(int maxPageSize) {
-		crawler.setMaxPageSize(maxPageSize);
-	}
-
-	public int getStopAfter() {
-		return crawler.getStopAfter();
-	}
-
-	public void setStopAfter(int stopAfter) {
-		crawler.setStopAfter(stopAfter);
-	}
-
 }
