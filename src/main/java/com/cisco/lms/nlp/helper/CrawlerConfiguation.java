@@ -35,7 +35,10 @@ public class CrawlerConfiguation {
 		config.setMaxPagesToFetch(1000);
 		config.setCrawlStorageFolder(crawlStorageFolder);
 		config.setFollowRedirects(false);
-		LOG.debug("Configuration:{}", config.toString());
+		config.setConnectionTimeout(10000);
+		config.setSocketTimeout(15000);
+		config.setMaxConnectionsPerHost(1000);
+		LOG.info("Configuration:{}", config);
 		return config;
 
 	}

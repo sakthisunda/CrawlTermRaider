@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
+import javax.inject.Provider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cisco.lms.nlp.helper.CrawlerConfiguation;
 import com.cisco.lms.nlp.helper.CrawlerController;
 import com.cisco.lms.nlp.helper.CsvToTurtleGenerator;
-
+import com.cisco.lms.nlp.helper.NlpCrawler;
 import com.cisco.lms.nlp.helper.TermRaiderHelper;
 
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
@@ -57,9 +59,9 @@ public class DataExtractionController {
 
 	@Autowired
 	CrawlerController crawlerController;
-
+		
 	@Autowired
-	TermRaiderHelper termRaiderHelper;
+	private Provider<TermRaiderHelper> termRaiderHelperProvider;
 
 	@RequestMapping(method = RequestMethod.POST, value = "/crawl/from-file", produces = { MediaType.APPLICATION_JSON_VALUE })
 	public WebAsyncTask<ResponseEntity<Map<String, Object>>> crawl(@RequestParam("file") MultipartFile file, @RequestParam(value = "depth", required = false) Integer depth, @RequestParam(value = "category", required = true) String category) throws Exception {
@@ -91,7 +93,7 @@ public class DataExtractionController {
 						}
 						crawlerController.setConfiguration(config);
 						crawlerController.crawl(urlList);
-						termRaiderHelper.createTermBank(bodyContent);
+						termRaiderHelperProvider.get().createTermBank(bodyContent);
 					} catch (Exception ex) {
 						LOG.error(" Exception happened while crawl/termraid:{}", ex);
 						throw new RuntimeException(ex);

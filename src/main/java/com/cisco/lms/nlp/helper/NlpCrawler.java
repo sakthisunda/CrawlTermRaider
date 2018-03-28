@@ -61,8 +61,10 @@ public class NlpCrawler extends WebCrawler {
 		String domain = url.getDomain();
 
 		if (FILTERS.matcher(href).matches() || !domains.contains(domain)) {
-			LOG.info("Skipping domain: {} for {} ***************", domain, href);
+			LOG.info("Skipping file: {} on  {} ***************", href, domain);
 			return false;
+		} else {
+			LOG.info("Qualified for crawling url : {} on  {} ***************", href, domain);
 		}
 
 		return true;

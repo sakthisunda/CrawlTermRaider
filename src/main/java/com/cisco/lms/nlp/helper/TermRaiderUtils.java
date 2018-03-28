@@ -31,22 +31,14 @@ public class TermRaiderUtils {
 
 	private static final String ZULU_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
-	private Path outputFolder;
-
+	
 	public String urlToFolderName(String url) {
 		if (url == null)
 			return url;
 		return url.replaceAll("[^\\p{L}\\p{Nd}]+", "_");
 	}
 
-	public void setOutputFolder(String url) throws IOException {
-		String outputDir = env.getProperty(DefaultConstants.OUTPUT_DIR_KEY) + File.separator + urlToFolderName(url);
-		outputFolder = Files.createDirectories(Paths.get(outputDir));
-	}
-
-	public Path getOutputFolder() {
-		return outputFolder;
-	}
+	
 
 	public String getZuluDate() {
 		Date date = new Date();
