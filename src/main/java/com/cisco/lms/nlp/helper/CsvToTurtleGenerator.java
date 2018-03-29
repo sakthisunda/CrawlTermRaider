@@ -29,7 +29,7 @@ public class CsvToTurtleGenerator {
 	private TemplateTranformer templateTranformer;
 
 	@Autowired
-	TermRaiderUtils utils;
+	CrawlerUtils utils;
 
 	public String getCsvAbsoluteFileName() {
 		return csvAbsoluteFileName;

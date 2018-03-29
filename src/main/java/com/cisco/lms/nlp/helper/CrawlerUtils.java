@@ -1,10 +1,7 @@
 package com.cisco.lms.nlp.helper;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 
@@ -22,12 +19,12 @@ import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.parser.ParseData;
 
 @Component
-public class TermRaiderUtils {
+public class CrawlerUtils {
 
 	@Autowired
 	Environment env;
 
-	private static final Logger LOG = LoggerFactory.getLogger(TermRaiderUtils.class);
+	private static final Logger LOG = LoggerFactory.getLogger(CrawlerUtils.class);
 
 	private static final String ZULU_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
@@ -46,14 +43,32 @@ public class TermRaiderUtils {
 		df.setTimeZone(java.util.TimeZone.getTimeZone("Zulu"));
 		return df.format(date);
 	}
+	
+	public String getHtmlFilteredData(ParseData data) {
+		
+		HtmlParseData htmlParseData = (HtmlParseData) data;
+		Document htmlDoc = Jsoup.parse(htmlParseData.getHtml());		
+		return StringEscapeUtils.unescapeHtml(Jsoup.clean(htmlDoc.select("p").html(), Whitelist.none()));
+		
+	}
+	
+	public String getHtmlData(ParseData data) {
+		
+		HtmlParseData htmlParseData = (HtmlParseData) data;
+		return htmlParseData.getHtml();		
+		
+	}
+	
+	public String getTitle(String html) {
+		Document htmlDoc = Jsoup.parse(html);
+		return htmlDoc.title();
+	}
+	
 
 	public void writeHtmlFilteredData(ParseData data, String fileName) {
 
-		HtmlParseData htmlParseData = (HtmlParseData) data;
-
-		try (PrintWriter pw = new PrintWriter(fileName)) {
-			Document htmlDoc = Jsoup.parse(htmlParseData.getHtml());
-			pw.write(StringEscapeUtils.unescapeHtml(Jsoup.clean(htmlDoc.select("p").html(), Whitelist.none())));
+		try (PrintWriter pw = new PrintWriter(fileName)) {			
+			pw.write(getHtmlFilteredData(data));
 		} catch (Exception ex) {
 			LOG.info("Exception parsing Html data:{}", ex);
 		}
@@ -79,6 +94,16 @@ public class TermRaiderUtils {
 
 		} catch (Exception ex) {
 			LOG.info("Exception parsing binary data:{}", ex);
+		}
+
+	}
+	
+	public void writeTTL(String data, String fileName) {
+
+		try (PrintWriter pw = new PrintWriter(fileName)) {			
+			pw.println(data);
+		} catch (Exception ex) {
+			LOG.info("Exception parsing Html data:{}", ex);
 		}
 
 	}

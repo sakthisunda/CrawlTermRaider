@@ -28,7 +28,7 @@ import org.springframework.web.context.request.async.WebAsyncTask;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cisco.lms.nlp.helper.CrawlerConfiguation;
-import com.cisco.lms.nlp.helper.CrawlerController;
+import com.cisco.lms.nlp.helper.CrawlerProxy;
 import com.cisco.lms.nlp.helper.CsvToTurtleGenerator;
 import com.cisco.lms.nlp.helper.NlpCrawler;
 import com.cisco.lms.nlp.helper.TermRaiderHelper;
@@ -58,7 +58,7 @@ public class DataExtractionController {
 	CrawlerConfiguation configuration;
 
 	@Autowired
-	CrawlerController crawlerController;
+	CrawlerProxy crawlerProxy;
 		
 	@Autowired
 	private Provider<TermRaiderHelper> termRaiderHelperProvider;
@@ -91,8 +91,8 @@ public class DataExtractionController {
 						if (Optional.ofNullable(category).isPresent()) {
 							bodyContent.put("category", category);
 						}
-						crawlerController.setConfiguration(config);
-						crawlerController.crawl(urlList);
+						crawlerProxy.setConfiguration(config);
+						crawlerProxy.crawl(urlList);
 						termRaiderHelperProvider.get().createTermBank(bodyContent);
 					} catch (Exception ex) {
 						LOG.error(" Exception happened while crawl/termraid:{}", ex);
@@ -110,4 +110,43 @@ public class DataExtractionController {
 		return new WebAsyncTask<>(600000L, threadPoolExecutor, callableResponseEntity);
 	}
 
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/tag", produces = { MediaType.APPLICATION_JSON_VALUE })
+	public WebAsyncTask<ResponseEntity<Map<String, Object>>> tag(@RequestBody Map<String, Object> bodyContent, @RequestParam(value = "depth", required = false) Integer depth) {
+
+		Callable<ResponseEntity<Map<String, Object>>> callableResponseEntity = new Callable<ResponseEntity<Map<String, Object>>>() {
+			@Override
+			public ResponseEntity<Map<String, Object>> call() throws Exception {
+				
+				CompletableFuture.runAsync(() -> {
+					try {
+						
+						List<String> urlList = (List<String>) bodyContent.get("rootUrl");
+						CrawlConfig config = configuration.build();
+						
+						if (Optional.ofNullable(depth).isPresent()) {
+							config.setMaxDepthOfCrawling(depth);
+						}
+						
+						crawlerProxy.setConfiguration(config);
+						crawlerProxy.crawl(urlList,true);
+						
+					} catch (Exception ex) {
+						
+						LOG.error(" Exception happened while crawl/termraid:{}", ex);
+						throw new RuntimeException(ex);
+						
+					}
+					
+				}, threadPoolExecutor);
+
+				Map<String, Object> retJson = new HashMap<>();
+				retJson.put("success", "Request accepted");
+				return new ResponseEntity<>(retJson, HttpStatus.ACCEPTED);
+			}
+
+		};
+
+		return new WebAsyncTask<>(600000L, threadPoolExecutor, callableResponseEntity);
+	}
 }

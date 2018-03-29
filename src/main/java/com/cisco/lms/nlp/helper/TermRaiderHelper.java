@@ -48,7 +48,7 @@ public class TermRaiderHelper {
 	Environment env;
 
 	@Autowired
-	TermRaiderUtils utils;
+	CrawlerUtils utils;
 
 	private Path outputFolder;
 

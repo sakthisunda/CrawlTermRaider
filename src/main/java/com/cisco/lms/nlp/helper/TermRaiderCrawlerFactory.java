@@ -29,12 +29,14 @@ public class TermRaiderCrawlerFactory implements CrawlController.WebCrawlerFacto
 	Environment env;
 
 	@Autowired
-	TermRaiderUtils utils;
+	CrawlerUtils utils;
 
 	@Autowired
 	private Provider<NlpCrawler> nlpCrawler;
 
 	private Path outputDir;
+	
+	private boolean isTaggingEnabled;
 
 	private List<String> urlList = new ArrayList<>();
 
@@ -50,6 +52,14 @@ public class TermRaiderCrawlerFactory implements CrawlController.WebCrawlerFacto
 	public Path getOutputDir() {
 
 		return outputDir;
+	}
+	
+	public void setTagging(boolean isEnabled) {
+		this.isTaggingEnabled = isEnabled;
+	}
+	
+	public boolean isTaggingEnabled() {
+		return isTaggingEnabled;
 	}
 
 	public void addSeed(String url) {

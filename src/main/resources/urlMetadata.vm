@@ -1,0 +1,14 @@
+<http://clks.cisco.com/km/$id> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://clks.cisco.com/km/Asset> .
+<http://clks.cisco.com/km/$id> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/ontology/bibo/Webpage> .
+<http://clks.cisco.com/km/$id> <http://purl.org/dc/terms/title> "$title" .
+<http://clks.cisco.com/km/$id> <http://purl.org/dc/terms/created> "$creationDate" .
+<http://clks.cisco.com/km/$id> <http://www.w3.org/ns/prov#specializationOf> <$url> .
+<$url> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://clks.cisco.com/km/Asset> .
+<$url> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/ontology/bibo/Webpage> .
+<$url> <http://purl.org/dc/terms/title> "$title" .
+
+#foreach( $topic in $topics )   
+<http://clks.cisco.com/km/$id> <http://clks.cisco.com/km/tag> "$topic" .
+#end
+
+   

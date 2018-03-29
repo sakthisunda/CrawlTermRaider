@@ -19,15 +19,15 @@ import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 
 @Component
-public class CrawlerController {
+public class CrawlerProxy {
 
 	@Autowired
 	Environment env;
-	
+
 	@Autowired
 	private Provider<TermRaiderCrawlerFactory> termRaiderCrawlerFactoryProvider;
 
-	private static final Logger LOG = LoggerFactory.getLogger(CrawlerController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(CrawlerProxy.class);
 	private int numberOfCrawlers = 25;
 	private CrawlConfig config;
 
@@ -37,7 +37,7 @@ public class CrawlerController {
 
 	}
 
-	public void crawl(List<String> seedUrls) throws Exception {
+	public void crawl(List<String> seedUrls, boolean... isTaggingEnabled) throws Exception {
 
 		PageFetcher pageFetcher = new PageFetcher(config);
 		RobotstxtConfig robotstxtConfig = new RobotstxtConfig();
@@ -47,13 +47,17 @@ public class CrawlerController {
 
 		TermRaiderCrawlerFactory factory = termRaiderCrawlerFactoryProvider.get();
 		Optional.ofNullable(seedUrls).orElseGet(() -> Collections.<String>emptyList()).forEach(url -> {
-			controller.addSeed(url);
+			controller.addSeed(url); // This is mandatory
 			factory.addSeed(url);
 		});
 
 		LOG.info("Seed Urls:{}", seedUrls);
 		factory.setOutputDir(seedUrls.get(0)); // output folders created based
-												// on first seed url
+
+		// Set tagging
+		if (isTaggingEnabled.length > 0) {
+			factory.setTagging(isTaggingEnabled[0]);
+		}
 
 		controller.start(factory, numberOfCrawlers);
 

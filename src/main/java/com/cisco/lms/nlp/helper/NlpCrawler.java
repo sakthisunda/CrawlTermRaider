@@ -24,7 +24,10 @@ import edu.uci.ics.crawler4j.url.WebURL;
 public class NlpCrawler extends WebCrawler {
 
 	@Autowired
-	TermRaiderUtils termRaiderUtils;
+	CrawlerUtils crawlerUtils;
+	
+	@Autowired
+	TopicProcessor topicProcessor;
 
 	private static final Logger LOG = LoggerFactory.getLogger(NlpCrawler.class);
 
@@ -80,14 +83,19 @@ public class NlpCrawler extends WebCrawler {
 		LOG.info(String.format("%s is instance of %s", url, data.getClass().getTypeName()));
 		String fileName = url.replaceAll("[^\\p{L}\\p{Nd}]+", "_");
 
+		if(factory.isTaggingEnabled()) {
+			topicProcessor.process(page, data, factory.getOutputDir() + File.separator + fileName + ".ttl");
+			return;
+		}
+		
 		if (data instanceof HtmlParseData) {
 
-			termRaiderUtils.writeHtmlFilteredData(data, factory.getOutputDir() + File.separator + fileName + ".html");
+			crawlerUtils.writeHtmlFilteredData(data, factory.getOutputDir() + File.separator + fileName + ".html");
 
 		} else if (data instanceof BinaryParseData) {
 
 			String path = factory.getOutputDir() + File.separator + fileName;
-			termRaiderUtils.writeBinaryData(url, page.getContentData(), path);
+			crawlerUtils.writeBinaryData(url, page.getContentData(), path);
 
 		} else {
 
