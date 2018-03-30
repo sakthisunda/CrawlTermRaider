@@ -11,7 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.parser.PdfTextExtractor;
+
 import edu.uci.ics.crawler4j.crawler.Page;
+import edu.uci.ics.crawler4j.parser.BinaryParseData;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.parser.ParseData;
 
@@ -72,8 +76,16 @@ public class TopicProcessor {
 		if (data instanceof HtmlParseData) {
 			title = crawlerUtils.getTitle(crawlerUtils.getHtmlData(data));
 			model.put("topics", getTopics(data));
-		} else {
-			model.put("topics", getTopics(new String(page.getContentData())));
+		} else if (data instanceof BinaryParseData) {
+
+			PdfReader reader = new PdfReader(page.getContentData());
+			title = reader.getInfo().get("title");
+			StringBuilder builder = new StringBuilder();
+			for (int pageNum = 1; pageNum <= reader.getNumberOfPages(); pageNum++) {
+				builder.append(PdfTextExtractor.getTextFromPage(reader, pageNum));
+			}
+
+			model.put("topics", getTopics(builder.toString()));
 		}
 
 		model.put("title", title);

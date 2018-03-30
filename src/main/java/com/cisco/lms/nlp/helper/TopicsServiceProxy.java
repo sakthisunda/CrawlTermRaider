@@ -45,7 +45,7 @@ public class TopicsServiceProxy {
 
 		HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(postParameters, headers);
 
-		LOG.info("Sending request to get topics for : {} from the Gate Topics service", text);
+		LOG.debug("Sending request to get topics for : {} from the Gate Topics service", text);
 
 		long startTime = System.currentTimeMillis();
 
