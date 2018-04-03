@@ -25,13 +25,15 @@ public class NlpCrawler extends WebCrawler {
 
 	@Autowired
 	CrawlerUtils crawlerUtils;
-	
+
 	@Autowired
 	TopicProcessor topicProcessor;
 
 	private static final Logger LOG = LoggerFactory.getLogger(NlpCrawler.class);
 
 	private static final Pattern FILTERS = Pattern.compile(".*(\\.(svg|css|js|bmp|gif|ico|jpe?g" + "|png|tiff?|mid|mp2|mp3|mp4" + "|wav|avi|mov|mpeg|ram|m4v" + "|rm|smil|wmv|swf|wma|zip|rar|gz))$");
+	private static final String[] exclude = { "tr_tr", "es_bz", "ro_ro", "vi_vn", "fr_ca", "zh_tw", "no_no", "es_hn", "hu_hu", "en_ph", "fi_fi", "cs_cz", "en_be", "th_th", "nl_be", "bs_ba", "nl_nl", "en_za", "es_es", "es_cl", "de_ch", "pl_pl", "es_gt", "es_cr", "es_ni", "ko_kr", "sl_si", "es_ar",
+			"es_co", "de_de", "pt_pt", "da_dk", "ja_jp", "es_pa", "zh_hk" };
 
 	private TermRaiderCrawlerFactory factory;
 
@@ -66,9 +68,17 @@ public class NlpCrawler extends WebCrawler {
 		if (FILTERS.matcher(href).matches() || !domains.contains(domain)) {
 			LOG.info("Skipping file: {} on  {} ***************", href, domain);
 			return false;
-		} else {
-			LOG.info("Qualified for crawling url : {} on  {} ***************", href, domain);
 		}
+
+		for (String lang : exclude) {
+
+			if (href.contains(lang)) {
+				LOG.info("Skipping file: {} for invalid language ***************", href);
+				return false;
+			}
+		}
+
+		LOG.info("Qualified for crawling url : {} on  {} ***************", href, domain);
 
 		return true;
 
@@ -83,11 +93,11 @@ public class NlpCrawler extends WebCrawler {
 		LOG.info(String.format("%s is instance of %s", url, data.getClass().getTypeName()));
 		String fileName = url.replaceAll("[^\\p{L}\\p{Nd}]+", "_");
 
-		if(factory.isTaggingEnabled()) {
+		if (factory.isTaggingEnabled()) {
 			topicProcessor.process(page, data, factory.getOutputDir() + File.separator + fileName + ".ttl");
 			return;
 		}
-		
+
 		if (data instanceof HtmlParseData) {
 
 			crawlerUtils.writeHtmlFilteredData(data, factory.getOutputDir() + File.separator + fileName + ".html");
