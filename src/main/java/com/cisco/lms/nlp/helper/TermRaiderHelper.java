@@ -137,10 +137,10 @@ public class TermRaiderHelper {
 		LOG.info("*** Collecting output from : {} for corpus {} creation", this.getOutputFolder(), corpusName);
 		Arrays.stream(this.getOutputFolder().toFile().listFiles()).filter(File::isFile).forEach(file -> {
 			try {
-				LOG.debug("Iterating **** {}", file.getAbsolutePath());
+				LOG.info("Iterating **** {}", file.getAbsolutePath());
 				corpus.add(Factory.newDocument(file.toURI().toURL(), "UTF-8"));
 			} catch (Exception ex) {
-				LOG.debug("Error while adding {} to corpus:{}", file, ex);
+				LOG.warn("Error while adding {} to corpus:{}", file, ex);
 			}
 		});
 

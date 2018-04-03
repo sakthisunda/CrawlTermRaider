@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import com.itextpdf.text.pdf.PdfReader;
@@ -41,6 +42,7 @@ public class TopicProcessor {
 		LOG.info("TopicProcessor instance got created");
 	}
 
+	@Async
 	public void process(Page page, ParseData data, String fileName) {
 
 		try {
@@ -92,7 +94,7 @@ public class TopicProcessor {
 		model.put("creationDate", crawlerUtils.getZuluDate());
 		model.put("url", page.getWebURL().getURL());
 		String triple = templateTranformer.tranformVelocityTemplate("urlMetadata.vm", model);
-		LOG.info(" Generated Triple:\n{}", triple);
+		LOG.debug(" Generated Triple:\n{}", triple);
 		crawlerUtils.writeTTL(triple, fileName);
 
 	}

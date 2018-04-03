@@ -30,7 +30,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cisco.lms.nlp.helper.CrawlerConfiguation;
 import com.cisco.lms.nlp.helper.CrawlerProxy;
 import com.cisco.lms.nlp.helper.CsvToTurtleGenerator;
-import com.cisco.lms.nlp.helper.NlpCrawler;
 import com.cisco.lms.nlp.helper.TermRaiderHelper;
 
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
@@ -59,24 +58,28 @@ public class DataExtractionController {
 
 	@Autowired
 	CrawlerProxy crawlerProxy;
-		
+
 	@Autowired
 	private Provider<TermRaiderHelper> termRaiderHelperProvider;
 
 	@RequestMapping(method = RequestMethod.POST, value = "/crawl/from-file", produces = { MediaType.APPLICATION_JSON_VALUE })
-	public WebAsyncTask<ResponseEntity<Map<String, Object>>> crawl(@RequestParam("file") MultipartFile file, @RequestParam(value = "depth", required = false) Integer depth, @RequestParam(value = "category", required = true) String category) throws Exception {
+	public WebAsyncTask<ResponseEntity<Map<String, Object>>> crawl(@RequestParam("file") MultipartFile file, @RequestParam(value = "depth", required = false) Integer depth, @RequestParam(value = "termraid", required = false) Boolean termraid,
+			@RequestParam(value = "category", required = true) String category) throws Exception {
 
 		String fileContent = new String(file.getBytes());
 		String[] urls = fileContent.split("[\\r\\n]+");
 		Map<String, Object> bodyContent = new HashMap<>();
 		bodyContent.put("category", category);
+		bodyContent.put("termraid", termraid);
 		bodyContent.put("rootUrl", Arrays.asList(urls));
-		return crawl(bodyContent, depth, category);
+
+		return crawl(bodyContent, depth, termraid, category);
 
 	}
 
 	@RequestMapping(method = RequestMethod.POST, value = "/crawl", produces = { MediaType.APPLICATION_JSON_VALUE })
-	public WebAsyncTask<ResponseEntity<Map<String, Object>>> crawl(@RequestBody Map<String, Object> bodyContent, @RequestParam(value = "depth", required = false) Integer depth, @RequestParam(value = "category", required = false) String category) {
+	public WebAsyncTask<ResponseEntity<Map<String, Object>>> crawl(@RequestBody Map<String, Object> bodyContent, @RequestParam(value = "depth", required = false) Integer depth, @RequestParam(value = "termraid", required = false) Boolean termraid,
+			@RequestParam(value = "category", required = false) String category) {
 
 		Callable<ResponseEntity<Map<String, Object>>> callableResponseEntity = new Callable<ResponseEntity<Map<String, Object>>>() {
 			@Override
@@ -91,9 +94,12 @@ public class DataExtractionController {
 						if (Optional.ofNullable(category).isPresent()) {
 							bodyContent.put("category", category);
 						}
+
 						crawlerProxy.setConfiguration(config);
 						crawlerProxy.crawl(urlList);
-						termRaiderHelperProvider.get().createTermBank(bodyContent);
+						if (Optional.ofNullable(termraid).orElse(false).booleanValue()) {
+							termRaiderHelperProvider.get().createTermBank(bodyContent);
+						}
 					} catch (Exception ex) {
 						LOG.error(" Exception happened while crawl/termraid:{}", ex);
 						throw new RuntimeException(ex);
@@ -110,34 +116,36 @@ public class DataExtractionController {
 		return new WebAsyncTask<>(600000L, threadPoolExecutor, callableResponseEntity);
 	}
 
-	
-	@RequestMapping(method = RequestMethod.POST, value = "/tag", produces = { MediaType.APPLICATION_JSON_VALUE })
-	public WebAsyncTask<ResponseEntity<Map<String, Object>>> tag(@RequestBody Map<String, Object> bodyContent, @RequestParam(value = "depth", required = false) Integer depth) {
+	@RequestMapping(method = RequestMethod.POST, value = "/termraid/from-file", produces = { MediaType.APPLICATION_JSON_VALUE })
+	public WebAsyncTask<ResponseEntity<Map<String, Object>>> termraid(@RequestParam("file") MultipartFile file, @RequestParam(value = "depth", required = false) Integer depth, @RequestParam(value = "category", required = true) String category) throws Exception {
+
+		String fileContent = new String(file.getBytes());
+		String[] urls = fileContent.split("[\\r\\n]+");
+		Map<String, Object> bodyContent = new HashMap<>();
+		bodyContent.put("category", category);
+		bodyContent.put("rootUrl", Arrays.asList(urls));
+		return termraid(bodyContent, depth, category);
+
+	}
+
+	@RequestMapping(method = RequestMethod.POST, value = "/termraid", produces = { MediaType.APPLICATION_JSON_VALUE })
+	public WebAsyncTask<ResponseEntity<Map<String, Object>>> termraid(@RequestBody Map<String, Object> bodyContent, @RequestParam(value = "depth", required = false) Integer depth, @RequestParam(value = "category", required = false) String category) {
 
 		Callable<ResponseEntity<Map<String, Object>>> callableResponseEntity = new Callable<ResponseEntity<Map<String, Object>>>() {
 			@Override
 			public ResponseEntity<Map<String, Object>> call() throws Exception {
-				
 				CompletableFuture.runAsync(() -> {
 					try {
-						
-						List<String> urlList = (List<String>) bodyContent.get("rootUrl");
-						CrawlConfig config = configuration.build();
-						
-						if (Optional.ofNullable(depth).isPresent()) {
-							config.setMaxDepthOfCrawling(depth);
+
+						if (Optional.ofNullable(category).isPresent()) {
+							bodyContent.put("category", category);
 						}
-						
-						crawlerProxy.setConfiguration(config);
-						crawlerProxy.crawl(urlList,true);
-						
+
+						termRaiderHelperProvider.get().createTermBank(bodyContent);
 					} catch (Exception ex) {
-						
-						LOG.error(" Exception happened while crawl/termraid:{}", ex);
+						LOG.error(" Exception happened while doing exclusive termraid:{}", ex);
 						throw new RuntimeException(ex);
-						
 					}
-					
 				}, threadPoolExecutor);
 
 				Map<String, Object> retJson = new HashMap<>();
@@ -148,5 +156,55 @@ public class DataExtractionController {
 		};
 
 		return new WebAsyncTask<>(600000L, threadPoolExecutor, callableResponseEntity);
+	}
+
+	@RequestMapping(method = RequestMethod.POST, value = "/tag", produces = { MediaType.APPLICATION_JSON_VALUE })
+	public WebAsyncTask<ResponseEntity<Map<String, Object>>> tag(@RequestBody Map<String, Object> bodyContent, @RequestParam(value = "depth", required = false) Integer depth) {
+
+		Callable<ResponseEntity<Map<String, Object>>> callableResponseEntity = new Callable<ResponseEntity<Map<String, Object>>>() {
+			@Override
+			public ResponseEntity<Map<String, Object>> call() throws Exception {
+
+				CompletableFuture.runAsync(() -> {
+					try {
+
+						List<String> urlList = (List<String>) bodyContent.get("rootUrl");
+						CrawlConfig config = configuration.build();
+
+						if (Optional.ofNullable(depth).isPresent()) {
+							config.setMaxDepthOfCrawling(depth);
+						}
+
+						crawlerProxy.setConfiguration(config);
+						crawlerProxy.crawl(urlList, true);
+
+					} catch (Exception ex) {
+
+						LOG.error(" Exception happened while tagging:{}", ex);
+						throw new RuntimeException(ex);
+
+					}
+
+				}, threadPoolExecutor);
+
+				Map<String, Object> retJson = new HashMap<>();
+				retJson.put("success", "Request accepted");
+				return new ResponseEntity<>(retJson, HttpStatus.ACCEPTED);
+			}
+
+		};
+
+		return new WebAsyncTask<>(600000L, threadPoolExecutor, callableResponseEntity);
+	}
+
+	@RequestMapping(method = RequestMethod.POST, value = "/tag/from-file", produces = { MediaType.APPLICATION_JSON_VALUE })
+	public WebAsyncTask<ResponseEntity<Map<String, Object>>> tagFile(@RequestParam("file") MultipartFile file, @RequestParam(value = "depth", required = false) Integer depth) throws Exception {
+
+		String fileContent = new String(file.getBytes());
+		String[] urls = fileContent.split("[\\r\\n]+");
+		Map<String, Object> bodyContent = new HashMap<>();
+		bodyContent.put("rootUrl", Arrays.asList(urls));
+		return tag(bodyContent, depth);
+
 	}
 }

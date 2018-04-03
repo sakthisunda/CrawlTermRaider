@@ -32,8 +32,8 @@ public class NlpCrawler extends WebCrawler {
 	private static final Logger LOG = LoggerFactory.getLogger(NlpCrawler.class);
 
 	private static final Pattern FILTERS = Pattern.compile(".*(\\.(svg|css|js|bmp|gif|ico|jpe?g" + "|png|tiff?|mid|mp2|mp3|mp4" + "|wav|avi|mov|mpeg|ram|m4v" + "|rm|smil|wmv|swf|wma|zip|rar|gz))$");
-	private static final String[] exclude = { "tr_tr", "es_bz", "ro_ro", "vi_vn", "fr_ca", "zh_tw", "no_no", "es_hn", "hu_hu", "en_ph", "fi_fi", "cs_cz", "en_be", "th_th", "nl_be", "bs_ba", "nl_nl", "en_za", "es_es", "es_cl", "de_ch", "pl_pl", "es_gt", "es_cr", "es_ni", "ko_kr", "sl_si", "es_ar",
-			"es_co", "de_de", "pt_pt", "da_dk", "ja_jp", "es_pa", "zh_hk" };
+	private static final String[] exclude = { "ar_ae", "bg_bg", "bs_ba", "cs_cz", "da_dk", "de_at", "de_ch", "de_de", "el_gr", "en_be", "en_ph", "en_za", "es_ar", "es_mx", "es_bz", "es_cl", "es_bo", "es_co", "es_cr", "es_es", "es_gt", "es_hn", "es_ni", "es_pa", "es_pe", "es_py", "es_sv", "es_uy", "es_ve", "fi_fi", "fr_ca", "fr_be", "fr_ch", "fr_fr", "hr_hr",
+			"hu_hu", "it_it", "ja_jp", "ko_kr", "nl_be", "nl_nl", "no_no", "pl_pl", "pt_br", "pt_pt", "ro_ro", "ru_kz", "ru_ru", "ru_ua", "sk_sk", "sl_si", "sr_rs", "sv_se", "th_th", "tr_tr", "vi_vn", "zh_cn", "zh_hk", "zh_tw" };
 
 	private TermRaiderCrawlerFactory factory;
 
